@@ -1,29 +1,22 @@
-(ns travesedo.core)
+(ns travesedo.core
+  (:require [travesedo.util :as tutil]))
 
-(def default-config {})
+(defn with-connection 
+  "Adds a connection configuration to a pre-existing general connection"
+  [gen-config conn-config]  
+  (update-in gen-config [:conns] #(into [] (conj % conn-config))))
 
-(defn- add-config [config new-key value]
-  (assoc (or config default-config) new-key value))
+(defn with-host [host-name conn-config]
+  (tutil/add-config conn-config :host host-name))
 
-(defn with-database [db-name config]
-  (add-config config :db db-name))
+(defn with-port [port conn-config]
+  (tutil/add-config conn-config :port port))
 
-(defn with-host [ host config]
-  (add-config config :host host))
+(defn with-username [uname conn-config]
+  (tutil/add-config [conn-config :username uname]))
 
-(defn with-port [port config]
-  (add-config config :port  port))
-
-(defn with-collection [collection config]
-  (add-config config :collection collection))
-
-(defn with-security [flag config]
-  "Indicates if the server should be connected over https or http"
-  (add-config config :secure flag))
-
-(defn with-username [username config]
-  (add-config config :username username))
-
-(defn with-password [password config]
-  (add-config config :password password))
+(defn with-password 
+  "Sets a password for the connection configuration."
+  [password conn-config]
+  (tutil/add-config [conn-config :password password]))
 
