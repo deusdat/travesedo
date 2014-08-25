@@ -2,3 +2,4 @@ target/
 .lein*
 .DS_Store
 *.swp
+.nrepl-port
