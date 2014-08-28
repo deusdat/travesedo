@@ -10,7 +10,7 @@
     {:basic-auth token}))
 
 
-(defn build-url [{db-url :server-url} resource]
+(defn build-url [{db-url :server-url :as conn} resource]
   (let [cleaned-url (string/replace db-url #"(?<=.)/$" "")]
     (str cleaned-url resource)))
 
@@ -23,7 +23,9 @@
 (def core-params {:as :json 
                   :content-type :json
                   :coerce :always
-                  :throw-exceptions false})
+                  :throw-exceptions false
+                  :header-params {:async :false 
+                                  :waitForSync :true}})
 
 (defn execute 
   "Calls a specified coordinator with the desired request spec. 
@@ -54,7 +56,7 @@
                       data-params 
                       query-params 
                       conn-config 
-                      header-params
+                      {:headers header-params}
                       auth)]
     (handler url req-details)
     ))

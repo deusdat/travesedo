@@ -16,16 +16,16 @@
       (with-req config :method :get :resource root-resource)
       #(contains? (conj exceptional-codes 404) %))))
 
-(defn delete-database
+(defn delete-database!
   "Deletes a database by name.
   :db-name is required as a top level key."
   [{db-name :db-name :as config}]
   {:pre [db-name]}
   (pull-result-up 
     (process-response
-      (with-req config [:resource (str root-resource "/" db-name) :method :delete]))))
+      (with-req config :resource (str root-resource "/" db-name) :method :delete))))
 
-(defn create-database
+(defn create-database!
   "Creates a database with the name specified in config :db-name.
   To create a database with users as well include a list of users 
   at :users
