@@ -30,12 +30,15 @@
   (let [words (cstr/split input-string #"[\s_-]+")] 
     (cstr/join "" (cons (cstr/lower-case (first words)) (map cstr/capitalize (rest words))))))
 
-;; FIXME to make key-mapper passed in better like :as key-mapper-fn or something.
+(defn query-mapper
+  [k]
+  (camelize (name k)))
+
 (defn create-params
   ([config target-holder key-mapper & config-keys]
    (let [params (select-keys config config-keys)
          k-m (or key-mapper identity)
-         params (into {} (for [[k v] params] [(camelize (k-m (name k))) v]))]
+         params (into {} (for [[k v] params] [(key-mapper k) v]))]
      (merge-with merge config {target-holder params}))))
 
 
@@ -45,21 +48,22 @@
 
   Returns a new configuration with the original values and the :request-params."
   [config]
-  (create-params config :query-params nil :wait-for-sync :exclude-system :create-collection :count))
+  (let [out (create-params config :query-params query-mapper :wait-for-sync :exclude-system :create-collection :count)]
+    (println "add-q " out)
+    out))
 
 
-(defn keep-key-when-value
-  [coll keep-value?]
-  (select-keys coll (for [[k v] coll :when (keep-value? v)] k)))
+(defn- header-mapper
+  [k]
+  (let  [pairs {:async "x-arango-async" :match-revision :if-none-match :no-match-revision :if-match}]
+    (k pairs)))
 
-
-(defn move-headers [config]
-  (let [{async :async} config
-        ;; FIXME change the name on the key and value into a mapped over.
-        header-params (keep-key-when-value {"x-arango-async" (name (or  async "false"))} not-nil? )]
-    (merge config {:header-params header-params})))
+(defn add-header-params [config]
+  (create-params config :header-params header-mapper :match-revision :no-match-revision :async))
 
 (defn with-req
   [base-config & added-configs]
-  (let [full-config (move-headers (merge base-config (add-query-params base-config) (apply hash-map added-configs)))]
+  (let [full-config (merge base-config (apply hash-map added-configs))
+        full-config (add-query-params full-config)
+        full-config (add-header-params full-config)]
     (process-response (client/execute full-config))))
