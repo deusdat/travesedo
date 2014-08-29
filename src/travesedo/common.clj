@@ -30,15 +30,6 @@
   (let [words (cstr/split input-string #"[\s_-]+")] 
     (cstr/join "" (cons (cstr/lower-case (first words)) (map cstr/capitalize (rest words))))))
 
-
-(defn add-query-params
-  "Moves driver configuration values into their query parameter locations for the request.
-  It will merge any values in :query-params preset by the driver.
-
-  Returns a new configuration with the original values and the :request-params."
-  [config]
-  (create-params config :query-params nil :wait-for-sync :exclude-system :create-collection))
-
 ;; FIXME to make key-mapper passed in better like :as key-mapper-fn or something.
 (defn create-params
   ([config target-holder key-mapper & config-keys]
@@ -46,6 +37,16 @@
          k-m (or key-mapper identity)
          params (into {} (for [[k v] params] [(camelize (k-m (name k))) v]))]
      (merge-with merge config {target-holder params}))))
+
+
+(defn add-query-params
+  "Moves driver configuration values into their query parameter locations for the request.
+  It will merge any values in :query-params preset by the driver.
+
+  Returns a new configuration with the original values and the :request-params."
+  [config]
+  (create-params config :query-params nil :wait-for-sync :exclude-system :create-collection :count))
+
 
 (defn keep-key-when-value
   [coll keep-value?]
@@ -60,5 +61,5 @@
 
 (defn with-req
   [base-config & added-configs]
-  (let [full-config (move-headers (merge base-config (apply hash-map added-configs)))]
+  (let [full-config (move-headers (merge base-config (add-query-params base-config) (apply hash-map added-configs)))]
     (process-response (client/execute full-config))))

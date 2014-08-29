@@ -54,7 +54,7 @@
         req-details (merge 
                       core-params 
                       data-params 
-                      query-params 
+                      {:query-params query-params} 
                       conn-config 
                       {:headers header-params}
                       auth)]
