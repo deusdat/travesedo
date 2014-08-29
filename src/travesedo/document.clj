@@ -19,3 +19,26 @@
   [{id :id :as config}]
     (let [resource (str (get-document-root config) id)]
      (with-req config :resource resource :method :get)))
+
+(defn modify-document!
+  [{id :id doc :document :as config} method]
+  (let [resource  (str (get-document-root config) id)]
+    (with-req config :resource resource :method method :body doc)))
+
+(defn replace-document!
+  [config]
+  (modify-document! config :put))
+
+(defn patch-document!
+  [config]
+  (modify-document! config :patch))
+
+(defn delete-document!
+  [config]
+  (modify-document! config :delete))
+
+(defn read-all-documents
+  [{collection :collection :as config}]
+  (with-req config :resource (get-document-root config) 
+    :method :get 
+    :query-params {:collection collection}))

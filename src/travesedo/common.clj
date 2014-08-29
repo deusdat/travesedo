@@ -48,7 +48,14 @@
 
   Returns a new configuration with the original values and the :request-params."
   [config]
-  (let [out (create-params config :query-params query-mapper :wait-for-sync :exclude-system :create-collection :count)]
+  (let [out (create-params config 
+                           :query-params query-mapper 
+                           :wait-for-sync 
+                           :exclude-system 
+                           :create-collection 
+                           :count
+                           :rev
+                           :policy)]
     (println "add-q " out)
     out))
 
