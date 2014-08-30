@@ -4,6 +4,15 @@
 
 (def exceptional-codes #{403 400 409})
 
+;; ArangoDB returns a result field in the body of the db calls.
+(defn pull-result-up 
+  "Used to pull the :result attribute out of various Arango results."
+  [res]
+  (let [pulled-up (assoc-in res [:result] (:result (:result res)))]
+    (println pulled-up)
+    (dissoc pulled-up (keys (:result pulled-up)))))
+
+
 (defn default-exceptional? [code]
   (contains? exceptional-codes code))
 
@@ -18,11 +27,11 @@
           req-time :request-time} res]
      (if (exceptional? res-code) 
        (throw (ex-info (:errorMessage body) res)) 
-       {:async-id job-id 
-        :req-time req-time
-        :result body
-        :code res-code})
-     )))
+       (merge {:async-id job-id 
+               :req-time req-time
+               :result (or (:result body) body)
+               :code res-code} body)
+       ))))
 
 (def not-nil? (complement nil?))
 
@@ -56,13 +65,12 @@
                            :count
                            :rev
                            :policy)]
-    (println "add-q " out)
     out))
 
 
 (defn- header-mapper
   [k]
-  (let  [pairs {:async "x-arango-async" :match-revision :if-none-match :no-match-revision :if-match}]
+  (let [pairs {:async "x-arango-async" :match-revision :if-none-match :no-match-revision :if-match}]
     (k pairs)))
 
 (defn add-header-params [config]
@@ -72,5 +80,8 @@
   [base-config & added-configs]
   (let [full-config (merge base-config (apply hash-map added-configs))
         full-config (add-query-params full-config)
-        full-config (add-header-params full-config)]
-    (process-response (client/execute full-config))))
+        full-config (add-header-params full-config)
+        res (process-response (client/execute full-config))]
+    (if (map? (:result res))
+      (apply dissoc res (or (keys (:result res))))
+      res)))
