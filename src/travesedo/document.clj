@@ -1,5 +1,6 @@
 (ns travesedo.document
-  (:require [travesedo.common :refer :all]))
+  (:require [travesedo.common :refer :all]
+            [clojure.string :as cstr]))
 
 (defn- get-document-root
   [{db-name :db-name}]
@@ -17,7 +18,8 @@
   "Gets a document based on it's _id. Specify the database with :db-name.
   :id holds the document _id value. Ids normally look like collection/_key."
   [{id :id :as config}]
-    (let [resource (str (get-document-root config) id)]
+    (let [cleaned-id (cstr/replace id #"^/_api/document/" "") ;; in case id is overly qualified.
+          resource (str (get-document-root config) cleaned-id)]
      (with-req config :resource resource :method :get)))
 
 (defn modify-document!
