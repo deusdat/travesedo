@@ -24,7 +24,7 @@
 
 (defn clojurize-top-keys 
   [res]
-  (map (fn [[k v]] [(clojurize-key k) v]) res))
+  (into {} (map (fn [[k v]] [(clojurize-key k) v]) res)))
 
 
 (defn process-response
