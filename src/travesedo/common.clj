@@ -16,6 +16,17 @@
 (defn default-exceptional? [code]
   (contains? exceptional-codes code))
 
+(defn clojurize-key
+  [k]
+  (let [n (name k)
+        cn (cstr/replace n #"[A-Z]" #(str \- (cstr/lower-case %)))]
+    (keyword cn)))
+
+(defn clojurize-top-keys 
+  [res]
+  (map (fn [[k v]] [(clojurize-key k) v]) res))
+
+
 (defn process-response
   ([res]
    (process-response res default-exceptional?))
@@ -27,11 +38,10 @@
           req-time :request-time} res]
      (if (exceptional? res-code) 
        (throw (ex-info (:errorMessage body) res)) 
-       (merge {:async-id job-id 
-               :req-time req-time
-               :result (or (:result body) body)
-               :code res-code} body)
-       ))))
+       (clojurize-top-keys (merge {:async-id job-id 
+                                   :req-time req-time
+                                   :result (or (:result body) body)
+                                   :code res-code} body))))))
 
 (def not-nil? (complement nil?))
 

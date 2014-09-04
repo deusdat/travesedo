@@ -7,9 +7,18 @@
 
 (defn get-cursor
   "Retrieves the next portion of a cursor after the initial query.
-  Input {:cursor \"cursorID\" :db-name \"database1\"}
+  Input {:cursor \"cursorID\" :db-name \"database1\" conns: {...}}
 
-  Returns "
+  Returns a map with 
+  { :hasMore true/false
+    :error true/false
+    :result [ maps ]
+    :code int
+    :count int
+    :_id str, but optional if there are more records in the cursor.
+  }
+  
+  The value of of maps is dependant upon what query was executed."
   [{cursor :cursor :as config}]
   (let [resource (str (get-root-cursor config) cursor)] 
     (with-req config resource :method :put)))
