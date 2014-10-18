@@ -45,18 +45,24 @@
   "Creates the start of every resource based upon the database"
   (str db-root "/" db  api-resource))
 
-(defn- get-value [ctx interested-keys key-mapping]
-  "Used to look at a k-v pair to see if the value is interesting. If so, performs a possible transformation of the key"
+(defn get-values [ctx interested-keys key-mapping]
+  "Used to look at a k-v pairs to see if the value is interesting. If so, performs a possible transformation of the key"
   {:pre [(set? interested-keys)]};; using a list would result false for every key.
-  (into {} (for [[k v] ctx :when (k  interested-keys) ] [(k key-mapping k) (name v)])))
+  (into {} (for [[k v] ctx :when (get  interested-keys k) ] [(get key-mapping k k)  (name v)])))
+
+(defn- transform-response [resp]
+  "Processes the response from the server to make it match what the driver says the clients should expect"
+  (let [headers (get-values (:headers resp) #{"X-Arango-Async-Id"} {"X-Arango-Async-Id" :job-id})
+          body (:body resp)]
+    (conj {} body headers)))
 
 (defn call-arango [method resource ctx]
   (let [handler (method handler-lookup)
           conn (find-connection (assoc-in ctx [:conn :method] method))
           full-url (find-url conn resource)
           auth  {:basic-auth [(:uname conn) (:password conn)]}
-          query-params {:query-params (get-value ctx #{:wait-for-sync} {:wait-for-sync "waitForSync"})}
-          headers {:query-params (get-value ctx #{:if-match :if-none-match} nil)}
-          raw-response  (handler full-url  (conj {:as :json} query-params headers))]
-        (println ctx)
-        (:body raw-response) ))
+          query-params {:query-params (get-values ctx #{:wait-for-sync} {:wait-for-sync "waitForSync"})}
+          headers {:headers (get-values ctx #{:if-match :if-none-match :async} {:async "x-arango-async"})}
+          body {:form-params (:payload ctx)}
+          raw-response  (handler full-url  (conj {:as :json :content-type :json} body query-params headers auth))]
+        (transform-response raw-response)))
