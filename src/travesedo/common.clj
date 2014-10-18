@@ -1,97 +1,62 @@
 (ns travesedo.common
-  (:require [travesedo.http :as client]
-            [clojure.string :as cstr]))
+  (:require [clj-http.client :as client]
+                [clojure.string :as cstr]))
 
-(def exceptional-codes #{403 400 409})
+(defmacro def- [item value]
+  `(def ^{:private true} ~item ~value))
 
-;; ArangoDB returns a result field in the body of the db calls.
-(defn pull-result-up 
-  "Used to pull the :result attribute out of various Arango results."
-  [res]
-  (let [pulled-up (assoc-in res [:result] (:result (:result res)))]
-    (println pulled-up)
-    (dissoc pulled-up (keys (:result pulled-up)))))
+(def- handler-lookup {:get client/get :post client/post  :patch client/patch :put client/put :delete client/delete})
 
+(def- db-root "/_db")
 
-(defn default-exceptional? [code]
-  (contains? exceptional-codes code))
+(def- api-resource "/_api")
 
-(defn clojurize-key
-  [k]
-  (let [n (name k)
-        cn (cstr/replace n #"[A-Z]" #(str \- (cstr/lower-case %)))]
-    (keyword cn)))
+(def- get-conn #(select-keys % [:url :uname :password]))
 
-(defn clojurize-top-keys 
-  [res]
-  (into {} (map (fn [[k v]] [(clojurize-key k) v]) res)))
+(defn find-url[{url :url} resource]
+  (str url resource))
 
+(defmulti conn-selector :type)
 
-(defn process-response
-  ([res]
-   (process-response res default-exceptional?))
+(defmethod conn-selector :simple [conn]
+  (get-conn conn))
 
-  ([res exceptional?]
-   (let [{{job-id :x-arango-async-id} :headers
-          body :body
-          res-code :status
-          req-time :request-time} res]
-     (if (exceptional? res-code) 
-       (throw (ex-info (:errorMessage body) res)) 
-       (clojurize-top-keys (merge {:async-id job-id 
-                                   :req-time req-time
-                                   :result (or (:result body) body)
-                                   :code res-code} body))))))
+;; FIXME replicas and shards share a common need to inherit credentials and pick a connection at random.
+(defmethod conn-selector :replica [{ uname :uname password :password url :url method :method :as conn}]
+  (if (= :get method)
+    (let [replica (rand-nth (:replicas conn))]
+      (if (:uname replica)
+        (get-conn replica)
+        {:url (:url replica) :uname uname :password password}))
+    (get-conn conn)))
 
-(def not-nil? (complement nil?))
+(defmethod conn-selector :shard [{ uname :uname password :password url :url method :method :as conn}]
+  (let [shard (rand-nth (:coordinators conn))]
+      (if (:uname shard)
+        (get-conn shard)
+        {:url (:url shard) :uname uname :password password})))
 
-(defn camelize [input-string] 
-  (let [words (cstr/split input-string #"[\s_-]+")] 
-    (cstr/join "" (cons (cstr/lower-case (first words)) (map cstr/capitalize (rest words))))))
-
-(defn query-mapper
-  [k]
-  (camelize (name k)))
-
-(defn create-params
-  ([config target-holder key-mapper & config-keys]
-   (let [params (select-keys config config-keys)
-         k-m (or key-mapper identity)
-         params (into {} (for [[k v] params] [(key-mapper k) v]))]
-     (merge-with merge config {target-holder params}))))
+(defn find-connection [{conn :conn conn-select :conn-select}]
+  "Finds the {:url :uname :password} for a given context"
+  (if conn-select (conn-select conn) (conn-selector conn)) )
 
 
-(defn add-query-params
-  "Moves driver configuration values into their query parameter locations for the request.
-  It will merge any values in :query-params preset by the driver.
+(defn calc-resource-base [{db :db}]
+  "Creates the start of every resource based upon the database"
+  (str db-root "/" db  api-resource))
 
-  Returns a new configuration with the original values and the :request-params."
-  [config]
-  (let [out (create-params config 
-                           :query-params query-mapper 
-                           :wait-for-sync 
-                           :exclude-system 
-                           :create-collection 
-                           :count
-                           :rev
-                           :policy)]
-    out))
+(defn- get-value [ctx interested-keys key-mapping]
+  "Used to look at a k-v pair to see if the value is interesting. If so, performs a possible transformation of the key"
+  {:pre [(set? interested-keys)]};; using a list would result false for every key.
+  (into {} (for [[k v] ctx :when (k  interested-keys) ] [(k key-mapping k) (name v)])))
 
-
-(defn- header-mapper
-  [k]
-  (let [pairs {:async "x-arango-async" :match-revision :if-none-match :no-match-revision :if-match}]
-    (k pairs)))
-
-(defn add-header-params [config]
-  (create-params config :header-params header-mapper :match-revision :no-match-revision :async))
-
-(defn with-req
-  [base-config & added-configs]
-  (let [full-config (merge base-config (apply hash-map added-configs))
-        full-config (add-query-params full-config)
-        full-config (add-header-params full-config)
-        res (process-response (client/execute full-config))]
-    (if (map? (:result res))
-      (apply dissoc res (or (keys (:result res))))
-      res)))
+(defn call-arango [method resource ctx]
+  (let [handler (method handler-lookup)
+          conn (find-connection (assoc-in ctx [:conn :method] method))
+          full-url (find-url conn resource)
+          auth  {:basic-auth [(:uname conn) (:password conn)]}
+          query-params {:query-params (get-value ctx #{:wait-for-sync} {:wait-for-sync "waitForSync"})}
+          headers {:query-params (get-value ctx #{:if-match :if-none-match} nil)}
+          raw-response  (handler full-url  (conj {:as :json} query-params headers))]
+        (println ctx)
+        (:body raw-response) ))

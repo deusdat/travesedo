@@ -72,7 +72,9 @@ Most operations need to know on which database they are working: __:db "db_name"
                :if-match "123123"
                :conn-select (fun [conn]...)
                :db "example_db"
-               })
+               :connection-timeout 1000
+               :socket-timeout 2000
+               :accept-all-ssl? true})
 ```
 
 ## License
