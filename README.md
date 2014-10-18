@@ -45,6 +45,10 @@ The following is the simplest context.
 ```
 
 ## Adding Configuration Nuance
+Knowing how to make a valid connection string is great, but you'll want to do more than that. This section covers the process of using the drivers.
+
+### Submiting a Payload
+The driver will automatically convert a collection into a json format. To pass a payload to ArangoDB you need to add a key to the call context named __:payload__. The functions for interacting with ArangoDB will tell you what the payload should look like.
 
 ### Async Communication
 By default, operations in ArangoDB are synchronous per connection. For many applications this is perfectly fine,
@@ -79,6 +83,8 @@ Most operations need to know on which database they are working: __:db "db_name"
                :socket-timeout 2000
                :accept-all-ssl? true})
 ```
+## Exception Handling
+At present the driver relies on clj-http's natural response for exception generation. The codes and such will naturallly perculate up to the caller. As feedback comes in, this behavior might change.
 
 ## License
 
