@@ -48,13 +48,16 @@ The following is the simplest context.
 
 ### Async Communication
 By default, operations in ArangoDB are synchronous per connection. For many applications this is perfectly fine,
-you might want to take advantage of the asynchronous abilities at times. That's where the __:wait-for-sync__ option comes in.
+you might want to take advantage of the asynchronous abilities at times. That's where the __:async__ option comes in.
 There are four possible values.
-* __Not set__ - means the system defaults to __:wait-for-sync :false__.
+* __Not set__ - means the system defaults to __:async :false__.
 * __:false__ - this means that the system will use regular synchronous communication.
 * __:true__ - indicates that you want a fire and forget approach. If the server has room in the work queue, a success message comes back. Otherwise the driver will throw an exception.
 * __:store__ - means that the server should queue the work, but return a job id for later pickup.
 The driver will return the job id in the __:job-id__ field of the response map.
+
+## Flushing to Disk
+Like many largely in-memory databases ArangoDB keeps "commited" items in memory for some time before flushing them to the disk. In the case of a system failure, it is possible to lose these changes. If you need to wait for a flush, set __:wait-for-sync :true__ in the ctx.
 
 ## Working with Revisions
 ArangoDB leverages  MVCC  for transaction semantics. Depending on the operation, you might want to see if the version in the database matches the version you have in local memory. You might want to check the opposite of that. That's when you can use __:if-match__ and __:if-none-match__. The driver will throw a 412 exception when __:if-none-match__ is passed and the revision is the same or when __:if-match__ is passed and the revisions are different. if both are passed, the last one retrieved from the map wins.
