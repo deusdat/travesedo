@@ -62,9 +62,9 @@
           full-url (find-url conn resource)
           auth  {:basic-auth [(:uname conn) (:password conn)]}
           query-params {:query-params (get-values ctx
-                                                                            #{:wait-for-sync :exclude-system :load-count}
+                                                                            #{:wait-for-sync :exclude-system :load-count :in-collection :create-collection}
                                                                             {:wait-for-sync "waitForSync", :exclude-system "excludeSystem",
-                                                                             :load-count :count})}
+                                                                             :load-count :count, :in-collection "collection", :create-collection "createCollection"})}
           headers {:headers (get-values ctx #{:if-match :if-none-match :async} {:async "x-arango-async"})}
           body {:form-params (:payload ctx)}
           raw-response  (handler full-url  (conj {:as :json :content-type :json} body query-params headers auth))]
