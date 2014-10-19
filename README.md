@@ -14,6 +14,7 @@ Every operation requires a database context. At its simplest the context require
       :uname "example_user"
       :password "secret"}
     ```
+
 - Replica Set
 ```clojure
     {:type :replica
@@ -24,8 +25,9 @@ Every operation requires a database context. At its simplest the context require
                         :uname "replica_user_name"
                         :password "replica_password"}]}
       ;; if no uname & password fields are set in the replicas,
-      they inherit from the master configuration.
+      ;;they inherit from the master configuration.
    ```
+
 - Sharded
 ```clojure
     {:type :shard
