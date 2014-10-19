@@ -5,7 +5,7 @@
 (defmacro def- [item value]
   `(def ^{:private true} ~item ~value))
 
-(def- handler-lookup {:get client/get :post client/post  :patch client/patch :put client/put :delete client/delete})
+(def- handler-lookup {:get client/get :post client/post  :patch client/patch :put client/put :delete client/delete :head client/head})
 
 (def- db-root "/_db")
 
@@ -52,7 +52,7 @@
 
 (defn- transform-response [resp]
   "Processes the response from the server to make it match what the driver says the clients should expect"
-  (let [headers (get-values (:headers resp) #{"X-Arango-Async-Id"} {"X-Arango-Async-Id" :job-id})
+  (let [headers (get-values (:headers resp) #{"X-Arango-Async-Id" "Etag"} {"X-Arango-Async-Id" :job-id, "Etag" :rev})
           body (:body resp)]
     (conj {} body headers)))
 
@@ -62,8 +62,8 @@
           full-url (find-url conn resource)
           auth  {:basic-auth [(:uname conn) (:password conn)]}
           query-params {:query-params (get-values ctx
-                                                                            #{:wait-for-sync :exclude-system :load-count :in-collection :create-collection}
-                                                                            {:wait-for-sync "waitForSync", :exclude-system "excludeSystem",
+                                                                            #{:wait-for-sync :exclude-system :load-count :in-collection :create-collection :rev :policy :keep-null :type}
+                                                                            {:wait-for-sync "waitForSync", :exclude-system "excludeSystem", :keep-null "keepNull",
                                                                              :load-count :count, :in-collection "collection", :create-collection "createCollection"})}
           headers {:headers (get-values ctx #{:if-match :if-none-match :async} {:async "x-arango-async"})}
           body {:form-params (:payload ctx)}
