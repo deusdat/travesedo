@@ -13,7 +13,7 @@ Every operation requires a database context. At its simplest the context require
       :url "http://localhost:8529"
       :uname "example_user"
       :password "secret"}
-    ```
+```
 
 - Replica Set
 ```clojure
@@ -26,7 +26,7 @@ Every operation requires a database context. At its simplest the context require
                         :password "replica_password"}]}
       ;; if no uname & password fields are set in the replicas,
       ;;they inherit from the master configuration.
-   ```
+```
 
 - Sharded
 ```clojure
