@@ -67,5 +67,5 @@
                                                                              :load-count :count, :in-collection "collection", :create-collection "createCollection"})}
           headers {:headers (get-values ctx #{:if-match :if-none-match :async} {:async "x-arango-async"})}
           body {:form-params (:payload ctx)}
-          raw-response  (handler full-url  (conj {:as :json :content-type :json} body query-params headers auth))]
+          raw-response  (handler full-url  (conj {:as :json :content-type :json :coerce :always :throw-exceptions false } body query-params headers auth))]
         (transform-response raw-response)))

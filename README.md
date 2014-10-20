@@ -4,6 +4,9 @@ Travesedo is a Clojure driver for the ArangoDB data store system. It was inspire
 and its ease of configuration passing. The goal of the driver is to provide the most idiomatic Clojure driver while fully
 leveraging the power of the ArangoDB tools.
 
+I'm personally using the project. As a result, the driver has a bit of a pragmatic approach: getting features that I need out.
+As I have time, I will extend the driver (presently focused on document interaction) to the larger body of ArangoDB features.
+
 ## Usage
 
 Every operation requires a database context. At its simplest the context requires a :conn value. There are three possible values:
@@ -85,8 +88,9 @@ Most operations need to know on which database they are working: __:db "db_name"
                :socket-timeout 2000
                :accept-all-ssl? true})
 ```
+
 ## Exception Handling
-At present the driver relies on clj-http's natural response for exception generation. The codes and such will naturallly perculate up to the caller. As feedback comes in, this behavior might change.
+Errors like 404, or 500 are returned as maps. The driver does not throw exceptions. You should check the result's :error to see if everything was fine.
 
 ## License
 

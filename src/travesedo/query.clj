@@ -59,4 +59,4 @@
      (if  continue?
        (let [nb (next-batch clean-ctx)]
           (recur (:has-more nb) (conj (:result nb) res)))
-       {:error false, :code 200, :result (vec (flatten res)), :has-more false, :count (count res)}))))
+       (conj {:result (vec (flatten res)), :has-more false, :count (count res)} (select-keys q [:error :code]))))))
