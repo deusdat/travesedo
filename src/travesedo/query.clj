@@ -39,7 +39,7 @@
 
 (defn parse-query [ctx]
   "Like query but only checks the query for syntaxic correctness. Does not execute the query."
-  )
+  (map-response-keys (call-arango :post (str (calc-resource-base ctx ctx) "/query") (map-payload-keys ctx))))
 
 (defn manage-cursor [ctx method]
    (map-response-keys (call-arango method (str (calc-cursor-base ctx) "/" (:cursor-id ctx)) (map-payload-keys ctx))))
