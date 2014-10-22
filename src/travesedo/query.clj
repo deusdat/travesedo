@@ -64,7 +64,7 @@
   "This will find all documents matching a given condition, using the specified skiplist index."
   (call-simple ctx "/simple/by-condition-skiplist"))
 
-(defn by-condition-bitarray
+(defn by-condition-bitarray [ctx]
   "This will find all documents matching a given condition, using the specified skiplist index."
   (call-simple ctx "/simple/by-condition-bitarray"))
 
@@ -82,7 +82,7 @@
   document being first in the list. If  there are near documents of equal
   distance, documents are chosen randomly from this  set until the limit is
   reached."
-   (call-arango ctx "/simple/near"))
+   (call-simple ctx "/simple/near"))
 
 (defn within [ctx]
   "This will find all documents within a given radius around the
@@ -159,7 +159,7 @@
 
 (defn aql-query-all[ctx]
   "Executes a query and reads all of the results into the :result field. This is presently an eager operation. Can return a partial load if the server failed part way through."
- (let [q (query ctx)
+ (let [q (aql-query ctx)
        clean-ctx (conj (dissoc ctx :query) (select-keys q [:cursor-id]))]
    (loop [continue? (:has-more q) res (:result q)]
      (if  continue?
@@ -169,6 +169,6 @@
 
 
 (defn parse-aql-query [ctx]
-  "Like query but only checks the query for syntaxic correctness. Does not execute the query."
+  "Like aql-query but only checks the query for syntaxic correctness. Does not execute the query."
   (map-response-keys (call-arango :post (derive-resource ctx "/query") (map-payload-keys ctx))))
 

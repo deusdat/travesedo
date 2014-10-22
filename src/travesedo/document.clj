@@ -19,7 +19,7 @@
   Presently throws an exception if a 304 is returned when using :if-none-match rev."
   (call-arango :get (calc-document-resource ctx) ctx))
 
-(defn create-doc [ctx]
+(defn create [ctx]
   "Creates a new document in the collection specified by :in-collection. :create-collection :yes
   will create a collection if it doesn't exist. This will not work on a cluster. To wait for the document
   to flush to disk use :wait-for-sync :true. The document should be in the :payload slot."

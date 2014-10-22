@@ -2,16 +2,17 @@
   "Allows the client to modify collection settings on ArangoDB for a database. For exact
   responses for each operation see http://docs.arangodb.org/HttpCollection/Getting.html
   It is safe to presume that :db and :collection are required keys for most operations."
+  (:refer-clojure :exclude [load])
   (:require [travesedo.common :refer :all]))
 
 (def- collection-resource "/collection")
 
-(defn create-collection [ctx]
-  "Creates a collection defined in the __:payload__ key that follows the form at http://docs.arangodb.org/HttpCollection/Creating.html"
+(defn create [ctx]
+  "Creates a collection defined in the :payload. At a minum {:name \"coll\" }."
   (let [db-resource (derive-resource ctx collection-resource)]
   (call-arango :post db-resource ctx)))
 
-(defn find-collection-resource [ctx]
+(defn- find-collection-resource [ctx]
  (derive-resource ctx (str collection-resource "/" (:collection ctx))))
 
 (defn delete-collection [ctx]
@@ -33,13 +34,13 @@
 (defn get-all-collections [ctx]
      (call-arango :get (find-collection-resource ctx) ctx))
 
-(defn load-collection [ctx]
+(defn load [ctx]
   "Loads a given collection into memory. Helpful to prime the first read off a collection.
   :load-count :true will return the :count value in the result.
   :load-count :false should make the operation faster. :db and :collection are required."
   (call-arango :put (str (find-collection-resource ctx) "/load") ctx))
 
-(defn unload-collection [ctx]
+(defn unload [ctx]
   "Unloads a given collection from memory. :load-count :true will return the :count value in the result.
   :load-count :false should make the operation faster. :db and :collection are required."
   (call-arango :put (str (find-collection-resource ctx) "/unload") ctx))

@@ -1,5 +1,6 @@
 (ns travesedo.database
   "Handles all of the database api features of ArangoDB."
+  (:refer-clojure :exclude [drop])
   (:require [travesedo.common :refer :all]))
 
 (defn get-database-info [ctx]
@@ -28,12 +29,12 @@
   (let [current-resource (derive-resource ctx "/database")]
     (call-arango :get current-resource ctx)))
 
-(defn create-database [ctx]
+(defn create [ctx]
   "Creates a new database. The :payload key should be a map like so
   {:name \"db-name\"}  or
   {:name \"db-name\", :users [ {:username \"user\", :password \"password\"}]}"
-  (call-arango :post (derive-resource ctx "/database") ctx))
+  (call-arango :post "/_api/database" ctx))
 
-(defn drop-database [ctx]
+(defn drop [ctx]
   "Drops a database and all its contents. Database specified at __:db__"
-  (call-arango :delete (derive-resource ctx "/database") ctx))
+  (call-arango :delete (str "/_api/database/" (:db ctx)) ctx))
