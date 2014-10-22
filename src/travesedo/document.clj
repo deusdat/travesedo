@@ -7,7 +7,7 @@
 
 (defn calc-document-resource-base [ctx]
   "Builds a resource path upto, but excluding the document handle."
- (str (calc-resource-base ctx) doc-resource ))
+ (derive-resource ctx doc-resource))
 
 (defn calc-document-resource [ctx]
   "Builds a resource path from the database to the document handle.

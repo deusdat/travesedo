@@ -5,11 +5,19 @@
 (defmacro def- [item value]
   `(def ^{:private true} ~item ~value))
 
-(def- handler-lookup {:get client/get :post client/post  :patch client/patch :put client/put :delete client/delete :head client/head})
-
 (def- db-root "/_db")
 
 (def- api-resource "/_api")
+
+(defn calc-api-base [{db :db}]
+  "Creates the start of every resource based upon the database"
+  (str db-root "/" db  api-resource))
+
+(defn derive-resource [ctx resource]
+  "Calculates a fuller resource than calc-resource-base."
+  (str (calc-api-base ctx) resource))
+
+(def- handler-lookup {:get client/get :post client/post  :patch client/patch :put client/put :delete client/delete :head client/head})
 
 (def- get-conn #(select-keys % [:url :uname :password]))
 
@@ -40,10 +48,6 @@
   "Finds the {:url :uname :password} for a given context"
   (if conn-select (conn-select conn) (conn-selector conn)) )
 
-
-(defn calc-resource-base [{db :db}]
-  "Creates the start of every resource based upon the database"
-  (str db-root "/" db  api-resource))
 
 (defn get-values [ctx interested-keys key-mapping]
   "Used to look at a k-v pairs to see if the value is interesting. If so, performs a possible transformation of the key"

@@ -3,10 +3,10 @@
             [travesedo.common :refer :all]))
 
  (deftest db-resource
-   (is (= (calc-resource-base {:db "mydb"}) "/_db/mydb/_api" )))
+   (is (= (calc-api-base {:db "mydb"}) "/_db/mydb/_api" )))
 
   (deftest db-resource-building
-   (is (= (calc-resource-base {:db "mydb"}) "/_db/mydb/_api" )))
+   (is (= (calc-api-base {:db "mydb"}) "/_db/mydb/_api" )))
 
  (deftest find-connection-test
    (is (= (find-connection {:conn {:type :simple :url "http://localhost:8529" :uname "example_user" :password "secret"}})

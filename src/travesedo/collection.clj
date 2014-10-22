@@ -6,20 +6,19 @@
 
 (def- collection-resource "/collection")
 
-
 (defn create-collection [ctx]
   "Creates a collection defined in the __:payload__ key that follows the form at http://docs.arangodb.org/HttpCollection/Creating.html"
-  (let [db-resource (str (calc-resource-base ctx) collection-resource)]
+  (let [db-resource (derive-resource ctx collection-resource)]
   (call-arango :post db-resource ctx)))
+
+(defn find-collection-resource [ctx]
+ (derive-resource ctx (str collection-resource "/" (:collection ctx))))
 
 (defn delete-collection [ctx]
   "Deletes a collection, specified by :collection within the database specified by :db.
   Returns a map of the form {:code 200, :error false, :id \"16261336386\"} if successful."
-  (let [collection-resource (str (calc-resource-base ctx) collection-resource "/" (:collection ctx)) ]
+  (let [collection-resource (find-collection-resource ctx) ]
     (call-arango :delete collection-resource ctx)))
-
-(defn find-collection-resource [ctx]
-  (str (calc-resource-base ctx) collection-resource "/" (:collection ctx)))
 
 (defn get-collection-info [ctx]
   "Retrieves the meta-data about a collection. The context needs the :collection and :db set."
