@@ -194,7 +194,8 @@ slot in the ctx.
     :extra {...}}"
   [ctx]
   (map-response-keys (call-arango :post 
-                                  (calc-cursor-base ctx) (map-payload-keys ctx))))
+                                  (calc-cursor-base ctx) 
+                                   (map-payload-keys ctx))))
 
 (defn aql-query-all
   "Executes a query and reads all of the results into the :result field. This 
