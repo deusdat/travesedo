@@ -42,7 +42,7 @@
   [ctx]
   (manage-cursor ctx :delete))
 
-(defn- call-simple
+(defn call-simple
   "Helper function to coordinate mapping task."
   [ctx resource]
   (map-response-keys (call-arango :put 
@@ -91,7 +91,7 @@
 (defn by-condition-bitarray
   "This will find all documents matching a given condition, using the specified 
 skiplist index."
-  
+  [ctx]
   (call-simple ctx "/simple/by-condition-bitarray"))
 
 (defn any
@@ -212,9 +212,10 @@ slot in the ctx.
                :count (count res)} (select-keys q [:error :code]))))))
 
 
-(defn parse-aql-query [ctx]
+(defn parse-aql-query  
   "Like aql-query but only checks the query for syntaxic correctness. 
    Does not execute the query."
+   [ctx]
   (map-response-keys (call-arango :post (derive-resource ctx "/query")
                                   (map-payload-keys ctx))))
 
