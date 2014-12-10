@@ -1,4 +1,4 @@
-(defproject travesedo "0.1.2"
+(defproject travesedo "0.1.3"
   :description "A clojure driver for the ArangoDB server."
   :url "https://github.com/deusdat/travesedo"
   :license {:name "Eclipse Public License"
