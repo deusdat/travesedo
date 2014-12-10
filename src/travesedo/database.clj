@@ -7,12 +7,12 @@
   "Retrieves information about the server specified by :db value in the ctx.
   Returns a map with the form
   {:result {:name \"testing\",
-                 :id \"5417636485\",
-                 :path \"/var/lib/arangodb/databases/database-5417636485\",
-                 :isSystem false},
-     :error false,
-     :code 200
-     :job-id \"123123\"}"
+  :id \"5417636485\",
+  :path \"/var/lib/arangodb/databases/database-5417636485\",
+  :isSystem false},
+  :error false,
+  :code 200
+  :job-id \"123123\"}"
   
   [ctx]
   
@@ -24,13 +24,13 @@
     (call-arango :get db-users ctx)))
 
 (defn list-databases 
-  [ctx]
   "Lists the existing databases. If __:db__ to anythin other than _system, 
   an exception will occur.
   Returns map:
   {  :result [\"_system\"],
-      :error false,
-      :code 200}"
+  :error false,
+  :code 200}"
+  [ctx]
   (let [current-resource (derive-resource ctx "/database")]
     (call-arango :get current-resource ctx)))
 

@@ -16,14 +16,14 @@
   singular string like 'person'. :collections is not necessary for read-only
   execution. If you will modify a collection, you must specify it in the :write
   list; otherwise the transaction will fail.
-
+  
   :action - a string that represents a JavaScript function.
   
   :params - either a list or map of parameters to pass to the function 
   specified in the :action function.
-
+  
   :waitForSync - true or false.
-
+  
   :lockTimeout - the number of seconds ArangoDB will hold a lock."
   [ctx]
   (let [resource (calc-transaction-base ctx)]

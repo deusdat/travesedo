@@ -64,8 +64,8 @@
   Document to find's document handle should be in :_id."
   [ctx]
   (assoc (call-arango :head (calc-document-resource ctx) ctx) 
-         :code 200 
-         :error :false)  )
+    :code 200 
+    :error :false)  )
 
 (defn read-all-docs
   "Finds all of the paths, :_id's, or :key's of a given collection. Specify 

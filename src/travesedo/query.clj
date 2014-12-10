@@ -84,13 +84,13 @@
 
 (defn by-condition-skiplist
   "This will find all documents matching a given condition, using the specified
-   skiplist index."
+  skiplist index."
   [ctx]
   (call-simple ctx "/simple/by-condition-skiplist"))
 
 (defn by-condition-bitarray
   "This will find all documents matching a given condition, using the specified 
-skiplist index."
+  skiplist index."
   [ctx]
   (call-simple ctx "/simple/by-condition-bitarray"))
 
@@ -116,7 +116,7 @@ skiplist index."
 (defn within 
   "This will find all documents within a given radius around the
   coordinate (latitude, longitude). The returned list is sorted by distance.
-
+  
   In order to use the within operator, a geo index must be defined for the
   collection. This index also defines which attribute holds the coordinates
   for the document. If you have more then one geo-spatial index, you can
@@ -127,7 +127,7 @@ skiplist index."
 (defn fulltext
   "This will find all documents from the collection that match the fulltext
   query specified in query.
-
+  
   In order to use the fulltext operator, a fulltext index must be defined for
   the collection and the specified attribute."
   [ctx]
@@ -160,7 +160,7 @@ skiplist index."
   of insertion/update time. When the count argument is supplied, the result
   will be a list of documents, with the \"oldest\" document being first in the
   result list. If the count argument is not supplied, the result is the 
-\"oldest\" document of the collection, or null if the collection is empty."
+  \"oldest\" document of the collection, or null if the collection is empty."
   [ctx]
   (call-simple ctx "/simple/first"))
 
@@ -174,28 +174,28 @@ skiplist index."
 
 (defn aql-query
   "Execute a query against ArangoDB. The query map should be in the :payload 
-slot in the ctx.
+  slot in the ctx.
   The query map can have the following form:
   {:query \"String of AQL\",
-    :count :true/:false,
-    :batch-size number,
-    :ttl (time to live for cursor in seconds),
-    :bind-vars (k-v list of parameters),
-    :options (k-v list of options)}
+  :count :true/:false,
+  :batch-size number,
+  :ttl (time to live for cursor in seconds),
+  :bind-vars (k-v list of parameters),
+  :options (k-v list of options)}
   Everything but :query is optional.
-
+  
   Upon successful execution, the response will look like this
   {:error false,
-    :code http_code_number,
-    :result [{...}],
-    :has-more true/false,
-    :count total_number_of_docs,
-    :cursor-id \"cursor id for future calls\",
-    :extra {...}}"
+  :code http_code_number,
+  :result [{...}],
+  :has-more true/false,
+  :count total_number_of_docs,
+  :cursor-id \"cursor id for future calls\",
+  :extra {...}}"
   [ctx]
   (map-response-keys (call-arango :post 
                                   (calc-cursor-base ctx) 
-                                   (map-payload-keys ctx))))
+                                  (map-payload-keys ctx))))
 
 (defn aql-query-all
   "Executes a query and reads all of the results into the :result field. This 
@@ -214,8 +214,8 @@ slot in the ctx.
 
 (defn parse-aql-query  
   "Like aql-query but only checks the query for syntaxic correctness. 
-   Does not execute the query."
-   [ctx]
+  Does not execute the query."
+  [ctx]
   (map-response-keys (call-arango :post (derive-resource ctx "/query")
                                   (map-payload-keys ctx))))
 
