@@ -6,5 +6,6 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [clj-http "1.0.0"]
                  [org.clojure/tools.trace "0.7.8"]]
+ 
   :profiles {:dev { :plugins [[com.jakemccrary/lein-test-refresh "0.5.2"]
                                            [lein-autoreload "0.1.0"]]}})
