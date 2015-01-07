@@ -1,6 +1,7 @@
 (ns travesedo.common
   (:require [clj-http.client :as client]
-            [clojure.string :as cstr]))
+            [clojure.string :as cstr]
+            [clojure.set :as cset]))
 
 (defmacro def- [item value]
   `(def ^{:private true} ~item ~value))
@@ -23,6 +24,14 @@
                                    :load-count :count,
                                    :in-collection "collection",
                                    :create-collection "createCollection"})
+                                   
+(def response-key-mappings   {:isSystem :is-system,
+										:waitForSync :wait-for-sync, 
+										:doCompact :do-compact,
+										:journalSize :journal-size,
+										:isVolatile :is-volatile,
+										:numberOfShards :number-of-shards,
+										:sharKeys :shard-keys})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.
@@ -84,7 +93,7 @@
   [ctx interested-keys key-mapping]
   {:pre [(set? interested-keys)]};; using a list would result false for every key.
   (into {} (for [[k v] ctx :when (get  interested-keys k) ]
-             [(get key-mapping k k)  (name v)])))
+             [(get key-mapping k k) (if (string? v ) (name v) v)])))
 
 (defn- transform-response [resp]
   "Processes the response from the server to make it match what the driver says
@@ -92,8 +101,9 @@
   (let [headers (get-values (:headers resp)
                             #{"X-Arango-Async-Id" "Etag"}
                             {"X-Arango-Async-Id" :job-id, "Etag" :rev})
-        body (:body resp)]
-    (conj {} body headers)))
+        raw-body (:body resp)
+        clean-body (cset/rename-keys raw-body response-key-mappings) ]
+    (conj {} clean-body headers)))
 
 (defn call-arango [method resource ctx]
   (let [handler (method handler-lookup)

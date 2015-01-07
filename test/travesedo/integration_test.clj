@@ -99,7 +99,7 @@
 	(testing "Checking details out for a collection"
 		(let [stats (col/get-collection-info (assoc ctx :collection "people"))]
 			(cpp/pprint stats)
-			(is (= { :code 200, :error false, :type 2, :status 3, :isSystem false,
+			(is (= { :code 200, :error false, :type 2, :status 3, :is-system false,
  						:name "people"} (dissoc stats :id))))))      
       
 (deftest query-by-example
@@ -121,6 +121,7 @@
           p1 (first col)
           p2 (second col)]
       (no-error resp)
+      (cpp/pprint resp)
       (contains-n-docs resp 2)
       (amber? p1)
       (patrick? p2)))
