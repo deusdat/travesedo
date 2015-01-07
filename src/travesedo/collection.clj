@@ -10,7 +10,69 @@
 (def- collection-resource "/collection")
 
 (defn create
-  "Creates a collection defined in the :payload. At a minum {:name \"coll\" }."
+  "Creates a collection defined in the :payload of the context. The map
+  can have the following values 
+  
+  :name - a string naming the new collection. Required.
+  
+  :wait-for-sync - boolean indicating that the collection should wait for a disk
+  sync before returning that the operation result.
+  Defaults to false.
+
+  :do-compact - boolean determining if the collection will be compacted.
+  Defaults to true.
+  
+  :journal-size - int the maximal size journal for the collection in bytes.
+  Defaults to system value.
+  
+  :is-system - boolean indicating the collection belongs in the _system db.
+  Defaults to false.
+  
+  :is-volatile - boolean indicating the collection is in-memory only. 
+  Defaults to false.
+  
+  :key-options - a vec of simple maps with the following options. 
+  		:type :traditional | :autoincrement 
+  		:allow-user-keys - a boolean.
+  		:increment - the amount to add to each key for :autoincrement.
+  		:offset - initial offset of the autoincrement.
+
+	:type - indicates collection type. Default is 2 for document. 3 indicates
+	an edge collection. Everything else is ignored.
+	
+	:number-of-shards - number of shards for a collection in a cluster. Meanless
+	in a single server environment.
+	
+	:shard-keys - vec of strings indicating the attributes of the document used
+	to derive a shard key. Once set, cannot be undone.
+	
+	Example ctx 
+	(def ctx {:conn {:type :simple
+                      	:url \"http://localhost:8529\"}
+               :async :stored
+               :db \"example_db\"
+               :connection-timeout 1000
+               :socket-timeout 2000
+               :accept-all-ssl? true
+               :payload {
+						:name \"DemoCollection\"
+						:wait-for-sync true
+						:key-options [{:type :traditional} {:allow-user-keys true}]               
+               }})
+          
+  	If success, returns a map 
+  	{ 
+  		:id \"1173494600\", 
+  		:name testCollectionUsers, 
+  		:wait-for-sync false, 
+  		:is-volatile false, 
+  		:is-system false, 
+  		:status 3, 
+  		:type 2, 
+  		:error false, 
+  		:code 200 
+	}
+  "
   [ctx]
   (let [db-resource (derive-resource ctx collection-resource)]
     (call-arango :post db-resource ctx)))
@@ -21,6 +83,14 @@
 (defn delete-collection
   "Deletes a collection, specified by :collection within the database specified 
   by :db.
+
+	Example ctx
+	(def ctx {:conn {:type :simple
+                      	:url \"http://localhost:8529\"}
+               :async :stored
+               :db \"example_db\"
+               :collection \"ToBeDeleted\"})  
+  
   Returns a map of the form {:code 200, :error false, :id \"16261336386\"} 
   if successful."
   [ctx]
@@ -28,8 +98,28 @@
     (call-arango :delete collection-resource ctx)))
 
 (defn get-collection-info
-  "Retrieves the meta-data about a collection. The context needs the 
-  :collection and :db set."
+  	"Retrieves the meta-data about a collection. The context needs the 
+  	:collection and :db set.
+  
+	Example ctx
+	Example ctx
+	(def ctx {:conn {:type :simple
+                      	:url \"http://localhost:8529\"}
+               :async :stored
+               :db \"example_db\"
+               :collection \"ToBeDeleted\"})  
+               
+	Returns a map of the form 
+  	{
+  		:code 200,
+ 		:error false,
+ 		:type 2,
+ 		:status 3,
+ 		:isSystem false,
+ 		:name \"people\",
+ 		:id \"41559742461\"
+ 	}
+  "
   [ctx]
   (let [collection-resource (find-collection-resource ctx)]
     (call-arango :get collection-resource ctx)))

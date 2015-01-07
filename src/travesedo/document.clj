@@ -53,7 +53,9 @@
   (call-arango :patch ( calc-document-resource ctx) ctx))
 
 (defn delete
-  "Deletes a document by its :_id. :rev, :policy, :wait-for-sync, and 
+  "Deletes a document by its :_id. 
+	A partial ctx is {:db \"somedb\" :_id \"collectionName/_key\"}  
+  :rev, :policy, :wait-for-sync, and 
   :if-match work as they do in replace-doc."
   [ctx]
   (call-arango :delete ( calc-document-resource ctx) ctx))

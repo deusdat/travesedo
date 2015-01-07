@@ -1,5 +1,6 @@
 (ns travesedo.integration-test
   (:require [clojure.test :refer :all]
+  				[clojure.pprint :as cpp]
             [travesedo.database :as db]
             [travesedo.collection :as col]
             [travesedo.query :as q]
@@ -22,7 +23,7 @@
   (apply str (take length (repeatedly random-char))))
 
 ;; Connection
-(def ctx {:conn {:type :simple, :url "http://localhost:8529"}
+(def ctx {:conn {:type :simple, :url "http://arangodb:8529"}
           :db  (random-str 15), :wait-for-sync :true} ;; wait to avoid write misses.
   )
 
@@ -93,6 +94,14 @@
           resp (q/parse-aql-query (assoc ctx :payload {:query aql}))]
       (is (= 200 (:code resp)))
       )))
+      
+(deftest get-collection-details
+	(testing "Checking details out for a collection"
+		(let [stats (col/get-collection-info (assoc ctx :collection "people"))]
+			(cpp/pprint stats)
+			(is (= { :code 200, :error false, :type 2, :status 3, :isSystem false,
+ 						:name "people"} (dissoc stats :id))))))      
+      
 (deftest query-by-example
   (testing "Tries to query for a doc based on name example."
     (let [example {:example {:name "JPatrick Davenport"} :collection "people"}

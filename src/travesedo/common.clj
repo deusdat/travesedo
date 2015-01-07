@@ -13,6 +13,16 @@
                      :content-type :json
                      :coerce :always
                      :throw-exceptions false })
+(def query-interested-keys  #{:wait-for-sync :exclude-system :load-count
+                                    :in-collection :create-collection :rev
+                                    :policy :keep-null :type})
+                                    
+(def query-key-mappings {:wait-for-sync "waitForSync",
+                                   :exclude-system "excludeSystem",
+                                   :keep-null "keepNull",
+                                   :load-count :count,
+                                   :in-collection "collection",
+                                   :create-collection "createCollection"})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.
@@ -91,16 +101,7 @@
         full-url (find-url conn resource)
         auth  {:basic-auth [(:uname conn) (:password conn)]}
         query-params {:query-params
-                      (get-values ctx
-                                  #{:wait-for-sync :exclude-system :load-count
-                                    :in-collection :create-collection :rev
-                                    :policy :keep-null :type}
-                                  {:wait-for-sync "waitForSync",
-                                   :exclude-system "excludeSystem",
-                                   :keep-null "keepNull",
-                                   :load-count :count,
-                                   :in-collection "collection",
-                                   :create-collection "createCollection"})}
+                      (get-values ctx query-interested-keys query-key-mappings)}
         headers {:headers (get-values ctx #{:if-match :if-none-match :async}
                                       {:async "x-arango-async"})}
         body {:form-params (:payload ctx)}
