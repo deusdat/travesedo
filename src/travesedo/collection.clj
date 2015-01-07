@@ -237,10 +237,10 @@
   "Changes a group of properties via the :payload value. The link 
   http://docs.arangodb.org/HttpCollection/Modifying.html
   details the possible map."
-  [ctx wait-for-sync joural-size]
-  {:pre [(number? journal-size) (boolean? wait-for-sync)]}
+  [ctx wait-for-sync journal-size]
+  {:pre [(number? journal-size)]}
   (call-arango :put (str (find-collection-resource ctx) "/properties") 
-  		(assoc ctx :wait-for-sync wait-for-sync :journal-size journal-size))
+  		(assoc ctx :wait-for-sync wait-for-sync :journal-size journal-size)))
 
 (defn rename 
   "Renames a collection. The :payload value should be 
