@@ -31,7 +31,8 @@
 										:journalSize :journal-size,
 										:isVolatile :is-volatile,
 										:numberOfShards :number-of-shards,
-										:sharKeys :shard-keys})
+										:sharKeys :shard-keys
+										:keyOptions :key-options})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.

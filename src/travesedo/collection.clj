@@ -100,8 +100,7 @@
 (defn get-collection-info
   	"Retrieves the meta-data about a collection. The context needs the 
   	:collection and :db set.
-  
-	Example ctx
+ 
 	Example ctx
 	(def ctx {:conn {:type :simple
                       	:url \"http://localhost:8529\"}
@@ -126,28 +125,111 @@
 
 (defn get-collection-properties
   "Retrieves the meta-data about a collection. The context needs the 
-  :collection and :db set."
+  :collection and :db set.
+  
+	Example ctx
+	(def ctx {:conn {:type :simple
+                      	:url \"http://localhost:8529\"}
+               :async :stored
+               :db \"example_db\"
+               :collection \"people\"})    
+  
+  	Upon success your result will like like this map
+  	{
+  		:journal-size 33554432,
+ 		:do-compact true,
+ 		:is-volatile false,
+ 		:name \"people\",
+ 		:is-system false,
+ 		:type 2,
+ 		:key-options {:type \"traditional\", :allowUserKeys true},
+ 		:status 3,
+ 		:id \"43471493117\",
+ 		:code 200,
+ 		:error false,
+ 		:wait-for-sync false
+ 	}"
   [ctx]
   (let [collection-resource (str (find-collection-resource ctx) "/properties") ]
     (call-arango :get collection-resource ctx)))
 
-(defn get-all-collections [ctx]
-  (call-arango :get (find-collection-resource ctx) ctx))
+(defn get-all-collections 
+	"Returns all of the collections for a given database.
+	
+	Example ctx
+	(def ctx {:conn {:type :simple
+	                   	:url \"http://localhost:8529\"}
+	            :async :stored
+	            :db \"example_db\"
+	            :exclude-system true})  
+	
+	Upon success, get map like 
+	{:code 200,
+	 :error false,
+	 :names
+	 {:people
+	  {:id 44090742781,
+	   :name people,
+	   :isSystem false,
+	   :status 3,
+	   :type 2}},
+	 :collections
+	 [{:id 44090742781,
+	   :name people,
+	   :isSystem false,
+	   :status 3,
+	   :type 2}]}          
+	"
+	[ctx]
+	(call-arango :get (find-collection-resource ctx) ctx))
 
 (defn load
   "Loads a given collection into memory. Helpful to prime the first read off a 
   collection.
-  :load-count :true will return the :count value in the result.
-  :load-count :false should make the operation faster. 
-  :db and :collection are required."
+  :load-count true will return the :count value in the result.
+  :load-count false should make the operation faster. 
+  :db and :collection are required.
+  
+  Example ctx
+	(def ctx {:conn {:type :simple
+	                   	:url \"http://localhost:8529\"}
+	            :db \"example_db\"
+	            :collection \"people\"
+	            :load-count true})  
+	            
+	Example result
+	{
+		:code 200,
+		:error false,
+		:type 2,
+		:status 3,
+		:count 2,
+		:name \"people\",
+		:id 44255172605,
+		:is-system false
+	}"
   [ctx]
   (call-arango :put (str (find-collection-resource ctx) "/load") ctx))
 
 (defn unload 
-  "Unloads a given collection from memory. :load-count :true will return the 
-  :count value in the result.
-  :load-count :false should make the operation faster. 
-  :db and :collection are required."
+  "Unloads a given collection from memory. 
+	Example ctx
+	(def ctx {:conn {:type :simple
+	                   	:url \"http://localhost:8529\"}
+	            :db \"example_db\"
+	            :collection \"people\"})
+  
+  Example result
+	{
+		:code 200,
+		:error false,
+		:type 2,
+		:status 3,
+		:count 2,
+		:name \"people\",
+		:id 44255172605,
+		:is-system false
+	}"
   [ctx]
   (call-arango :put (str (find-collection-resource ctx) "/unload") ctx))
 
@@ -155,8 +237,10 @@
   "Changes a group of properties via the :payload value. The link 
   http://docs.arangodb.org/HttpCollection/Modifying.html
   details the possible map."
-  [ctx]
-  (call-arango :put (str (find-collection-resource ctx) "/properties") ctx))
+  [ctx wait-for-sync joural-size]
+  {:pre [(number? journal-size) (boolean? wait-for-sync)]}
+  (call-arango :put (str (find-collection-resource ctx) "/properties") 
+  		(assoc ctx :wait-for-sync wait-for-sync :journal-size journal-size))
 
 (defn rename 
   "Renames a collection. The :payload value should be 

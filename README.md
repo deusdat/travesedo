@@ -92,6 +92,12 @@ Most operations need to know on which database they are working: __:db "db_name"
 ## Exception Handling
 Errors like 404, or 500 are returned as maps. The driver does not throw exceptions. You should check the result's :error to see if everything was fine.
 
+## Attempt at Idiomatic Clojure.
+The input and top level attributes of the response keys follow idomatic,
+lowercase names. For example, ArangoDB returns "isSystem" when working with 
+collection meta data as part of its root document. The driver will convert this
+to :is-system. The driver will not convert 
+
 ## License
 
 Copyright © 2014 DeusDat Solutions.
