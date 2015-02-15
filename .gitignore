@@ -6,3 +6,5 @@ target/
 /bin/
 pom.xml
 pom.xml.asc
+.classpath
+.project
