@@ -1,6 +1,7 @@
 (ns travesedo.common
   (:require [clj-http.client :as client]
-            [clojure.string :as cstr]))
+            [clojure.string :as cstr]
+            [clojure.set :as cset]))
 
 (defmacro def- [item value]
   `(def ^{:private true} ~item ~value))
@@ -13,6 +14,25 @@
                      :content-type :json
                      :coerce :always
                      :throw-exceptions false })
+(def query-interested-keys  #{:wait-for-sync :exclude-system :load-count
+                                    :in-collection :create-collection :rev
+                                    :policy :keep-null :type})
+                                    
+(def query-key-mappings {:wait-for-sync "waitForSync",
+                                   :exclude-system "excludeSystem",
+                                   :keep-null "keepNull",
+                                   :load-count :count,
+                                   :in-collection "collection",
+                                   :create-collection "createCollection"})
+                                   
+(def response-key-mappings   {:isSystem :is-system,
+										:waitForSync :wait-for-sync, 
+										:doCompact :do-compact,
+										:journalSize :journal-size,
+										:isVolatile :is-volatile,
+										:numberOfShards :number-of-shards,
+										:sharKeys :shard-keys
+										:keyOptions :key-options})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.
@@ -74,7 +94,7 @@
   [ctx interested-keys key-mapping]
   {:pre [(set? interested-keys)]};; using a list would result false for every key.
   (into {} (for [[k v] ctx :when (get  interested-keys k) ]
-             [(get key-mapping k k)  (name v)])))
+             [(get key-mapping k k) (if (string? v ) (name v) v)])))
 
 (defn- transform-response [resp]
   "Processes the response from the server to make it match what the driver says
@@ -82,8 +102,9 @@
   (let [headers (get-values (:headers resp)
                             #{"X-Arango-Async-Id" "Etag"}
                             {"X-Arango-Async-Id" :job-id, "Etag" :rev})
-        body (:body resp)]
-    (conj {} body headers)))
+        raw-body (:body resp)
+        clean-body (cset/rename-keys raw-body response-key-mappings) ]
+    (conj {} clean-body headers)))
 
 (defn call-arango [method resource ctx]
   (let [handler (method handler-lookup)
@@ -91,16 +112,7 @@
         full-url (find-url conn resource)
         auth  {:basic-auth [(:uname conn) (:password conn)]}
         query-params {:query-params
-                      (get-values ctx
-                                  #{:wait-for-sync :exclude-system :load-count
-                                    :in-collection :create-collection :rev
-                                    :policy :keep-null :type}
-                                  {:wait-for-sync "waitForSync",
-                                   :exclude-system "excludeSystem",
-                                   :keep-null "keepNull",
-                                   :load-count :count,
-                                   :in-collection "collection",
-                                   :create-collection "createCollection"})}
+                      (get-values ctx query-interested-keys query-key-mappings)}
         headers {:headers (get-values ctx #{:if-match :if-none-match :async}
                                       {:async "x-arango-async"})}
         body {:form-params (:payload ctx)}

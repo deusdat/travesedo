@@ -6,6 +6,8 @@ target/
 /bin/
 pom.xml
 pom.xml.asc
+<<<<<<< HEAD
 .classpath
 .project
 classes/
+*~

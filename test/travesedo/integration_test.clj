@@ -1,5 +1,6 @@
 (ns travesedo.integration-test
   (:require [clojure.test :refer :all]
+  				[clojure.pprint :as cpp]
             [travesedo.database :as db]
             [travesedo.collection :as col]
             [travesedo.query :as q]
@@ -22,7 +23,7 @@
   (apply str (take length (repeatedly random-char))))
 
 ;; Connection
-(def ctx {:conn {:type :simple, :url "http://localhost:8529"}
+(def ctx {:conn {:type :simple, :url "http://arangodb:8529"}
           :db  (random-str 15), :wait-for-sync :true} ;; wait to avoid write misses.
   )
 
@@ -93,6 +94,82 @@
           resp (q/parse-aql-query (assoc ctx :payload {:query aql}))]
       (is (= 200 (:code resp)))
       )))
+      
+(deftest collection-manipulation
+	(testing "Checking details out for a collection"
+		(let [stats (col/get-collection-info (assoc ctx :collection "people"))]
+			(is (= { :code 200, :error false, :type 2, :status 3, :is-system false,
+ 						:name "people"} (dissoc stats :id)))))	
+ 						
+ 	(testing "Should return properties for a collection"
+		(let [props (col/get-collection-properties (assoc ctx 
+																	:collection "people"))
+				expected {:journal-size 33554432,
+							 :do-compact true,
+							 :is-volatile false,
+							 :name "people",
+							 :is-system false,
+							 :type 2,
+							 :key-options {:type "traditional", :allowUserKeys true},
+							 :status 3,
+							 :code 200,
+							 :error false,
+							 :wait-for-sync false}]
+			(is (= expected (dissoc props :id)))))
+			
+	(testing "Get all the collections for the db excluding system."
+		(let [cols (col/get-all-collections (assoc ctx :exclude-system true))
+				expected {:code 200,
+							 :error false,
+							 :names
+							 {:people
+							  {:name "people",
+							   :isSystem false,
+							   :status 3,
+							   :type 2}},
+							 :collections
+							 [{:name "people",
+							   :isSystem false,
+							   :status 3,
+							   :type 2}]}
+				cols-no-people-id (update-in cols [:names :people] dissoc :id)
+				cols-no-collections-id (update-in cols-no-people-id 
+													[:collections] 
+													#(conj [] (dissoc (first %) :id)))]
+			(is (= expected (update-in cols-no-collections-id [:names :people] dissoc :id)))))
+ 	
+	(testing "Should load the collection with count returned"
+		(let [resp (dissoc (col/load (assoc ctx :collection "people")) :id)
+				expected {:code 200,
+							 :error false,
+							 :type 2,
+							 :status 3,
+							 :count 2,
+							 :name "people",
+							 :is-system false}]
+			(is (= expected resp)))) 	
+			
+	(testing "Should unload the collection with count returned"
+		(let [resp (dissoc (col/unload (assoc ctx :collection "people")) :id)
+				expected {:code 200,
+							 :error false,
+							 :type 2,
+							 :status 4,
+							 :name "people",
+							 :is-system false}]
+			(cpp/pprint resp)
+			(is (= expected resp)))) 	
+ 	
+ 	(testing "Create and delete of collection"
+		(let [coll "CheckingManip"
+				create-resp (col/create (assoc ctx 
+													:payload {:name coll}))
+				delete-resp (col/delete-collection (assoc ctx :collection coll))]
+			(do
+				(no-error create-resp)
+				(no-error delete-resp))))
+)            
+      
 (deftest query-by-example
   (testing "Tries to query for a doc based on name example."
     (let [example {:example {:name "JPatrick Davenport"} :collection "people"}
@@ -104,7 +181,8 @@
      )))
 
 (deftest return-all-docs
-  (testing "Gets all of the documents for a collection defined in the collection"
+  (testing "Gets all of the documents for a collection defined in the 
+  				collection"
     (let [payload {:payload {:collection "people"}}
           new-ctx (conj payload ctx)
           resp (q/return-all new-ctx)
