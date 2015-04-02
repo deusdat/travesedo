@@ -1,6 +1,6 @@
 (ns travesedo.integration-test
   (:require [clojure.test :refer :all]
-  				[clojure.pprint :as cpp]
+            [clojure.pprint :as cpp]
             [travesedo.database :as db]
             [travesedo.collection :as col]
             [travesedo.query :as q]
@@ -39,7 +39,7 @@
                 :payload {:name "Amber Davenport" :age 31})  )
   (try (f)
     (finally
-     (db/drop ctx))))
+      (db/drop ctx))))
 
 
 (use-fixtures :once setup-fixure)
@@ -66,7 +66,7 @@
       (is (nil? (:has-more batched))) "There shouldn't be a data indicator."
       (is (= 404 (:code batched)) "Server should say not found.")
       (is (:error batched))) "Should map the error properly.")
-
+  
   (testing "Query with more results."
     (let [aql "FOR p IN people RETURN p"
           batched (q/aql-query (assoc ctx :payload {:query aql :batch-size 1}))]
@@ -75,11 +75,11 @@
       (contains-n-docs batched 1)
       (testing "Delete a cursor"
         (let [ cursor (select-keys batched [:cursor-id])
-               deleted-cursor (q/delete (conj ctx cursor))]
+              deleted-cursor (q/delete (conj ctx cursor))]
           (is (nil? (:has-more deleted-cursor)))
           (no-error deleted-cursor)
           (is (= 202 (:code deleted-cursor)))))))
-
+  
   (testing "Query all documents AQL"
     (let [aql "FOR p IN people RETURN p"
           payload { :payload {:query aql :batch-size 1}}
@@ -94,82 +94,82 @@
           resp (q/parse-aql-query (assoc ctx :payload {:query aql}))]
       (is (= 200 (:code resp)))
       )))
-      
+
 (deftest collection-manipulation
-	(testing "Checking details out for a collection"
-		(let [stats (col/get-collection-info (assoc ctx :collection "people"))]
-			(is (= { :code 200, :error false, :type 2, :status 3, :is-system false,
- 						:name "people"} (dissoc stats :id)))))	
- 						
+  (testing "Checking details out for a collection"
+    (let [stats (col/get-collection-info (assoc ctx :collection "people"))]
+      (is (= { :code 200, :error false, :type 2, :status 3, :is-system false,
+              :name "people"} (dissoc stats :id)))))	
+  
  	(testing "Should return properties for a collection"
-		(let [props (col/get-collection-properties (assoc ctx 
-																	:collection "people"))
-				expected {:journal-size 33554432,
-							 :do-compact true,
-							 :is-volatile false,
-							 :name "people",
-							 :is-system false,
-							 :type 2,
-							 :key-options {:type "traditional", :allowUserKeys true},
-							 :status 3,
-							 :code 200,
-							 :error false,
-							 :wait-for-sync false}]
-			(is (= expected (dissoc props :id)))))
-			
-	(testing "Get all the collections for the db excluding system."
-		(let [cols (col/get-all-collections (assoc ctx :exclude-system true))
-				expected {:code 200,
-							 :error false,
-							 :names
-							 {:people
-							  {:name "people",
-							   :isSystem false,
-							   :status 3,
-							   :type 2}},
-							 :collections
-							 [{:name "people",
-							   :isSystem false,
-							   :status 3,
-							   :type 2}]}
-				cols-no-people-id (update-in cols [:names :people] dissoc :id)
-				cols-no-collections-id (update-in cols-no-people-id 
-													[:collections] 
-													#(conj [] (dissoc (first %) :id)))]
-			(is (= expected (update-in cols-no-collections-id [:names :people] dissoc :id)))))
+    (let [props (col/get-collection-properties (assoc ctx 
+                                                 :collection "people"))
+          expected {:journal-size 33554432,
+                    :do-compact true,
+                    :is-volatile false,
+                    :name "people",
+                    :is-system false,
+                    :type 2,
+                    :key-options {:type "traditional", :allowUserKeys true},
+                    :status 3,
+                    :code 200,
+                    :error false,
+                    :wait-for-sync false}]
+      (is (= expected (dissoc props :id)))))
+  
+  (testing "Get all the collections for the db excluding system."
+    (let [cols (col/get-all-collections (assoc ctx :exclude-system true))
+          expected {:code 200,
+                    :error false,
+                    :names
+                    {:people
+                     {:name "people",
+                      :isSystem false,
+                      :status 3,
+                      :type 2}},
+                    :collections
+                    [{:name "people",
+                      :isSystem false,
+                      :status 3,
+                      :type 2}]}
+          cols-no-people-id (update-in cols [:names :people] dissoc :id)
+          cols-no-collections-id (update-in cols-no-people-id 
+                                            [:collections] 
+                                            #(conj [] (dissoc (first %) :id)))]
+      (is (= expected (update-in cols-no-collections-id [:names :people] dissoc :id)))))
  	
-	(testing "Should load the collection with count returned"
-		(let [resp (dissoc (col/load (assoc ctx :collection "people")) :id)
-				expected {:code 200,
-							 :error false,
-							 :type 2,
-							 :status 3,
-							 :count 2,
-							 :name "people",
-							 :is-system false}]
-			(is (= expected resp)))) 	
-			
-	(testing "Should unload the collection with count returned"
-		(let [resp (dissoc (col/unload (assoc ctx :collection "people")) :id)
-				expected {:code 200,
-							 :error false,
-							 :type 2,
-							 :status 4,
-							 :name "people",
-							 :is-system false}]
-			(cpp/pprint resp)
-			(is (= expected resp)))) 	
+  (testing "Should load the collection with count returned"
+    (let [resp (dissoc (col/load (assoc ctx :collection "people")) :id)
+          expected {:code 200,
+                    :error false,
+                    :type 2,
+                    :status 3,
+                    :count 2,
+                    :name "people",
+                    :is-system false}]
+      (is (= expected resp)))) 	
+  
+  (testing "Should unload the collection with count returned"
+    (let [resp (dissoc (col/unload (assoc ctx :collection "people")) :id)
+          expected {:code 200,
+                    :error false,
+                    :type 2,
+                    :status 4,
+                    :name "people",
+                    :is-system false}]
+      (cpp/pprint resp)
+      (is (= expected resp)))) 	
  	
  	(testing "Create and delete of collection"
-		(let [coll "CheckingManip"
-				create-resp (col/create (assoc ctx 
-													:payload {:name coll}))
-				delete-resp (col/delete-collection (assoc ctx :collection coll))]
-			(do
-				(no-error create-resp)
-				(no-error delete-resp))))
-)            
-      
+    (let [coll "CheckingManip"
+          create-resp (col/create (assoc ctx 
+                                    :payload {:name coll}))
+          delete-resp (col/delete-collection (assoc ctx :collection coll))]
+      (do
+        (no-error create-resp)
+        (no-error delete-resp))))
+  )            
+
 (deftest query-by-example
   (testing "Tries to query for a doc based on name example."
     (let [example {:example {:name "JPatrick Davenport"} :collection "people"}
@@ -178,22 +178,22 @@
           person (first (:result resp))]
       (patrick? person)
       (contains-n-docs resp 1)
-     )))
+      )))
 
 (deftest return-all-docs
   (testing "Gets all of the documents for a collection defined in the 
-  				collection"
-    (let [payload {:payload {:collection "people"}}
-          new-ctx (conj payload ctx)
-          resp (q/return-all new-ctx)
-          col (sort #(compare (:name %) (:name %2)) (:result resp))
-          p1 (first col)
-          p2 (second col)]
-      (no-error resp)
-      (contains-n-docs resp 2)
-      (amber? p1)
-      (patrick? p2)))
-
+           collection"
+           (let [payload {:payload {:collection "people"}}
+                 new-ctx (conj payload ctx)
+                 resp (q/return-all new-ctx)
+                 col (sort #(compare (:name %) (:name %2)) (:result resp))
+                 p1 (first col)
+                 p2 (second col)]
+             (no-error resp)
+             (contains-n-docs resp 2)
+             (amber? p1)
+             (patrick? p2)))
+  
   (testing "Limiting the return to 1 doc"
     (let [payload {:payload {:collection "people" :limit 1}}
           new-ctx (conj payload ctx)

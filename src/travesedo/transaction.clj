@@ -27,4 +27,4 @@
   :lockTimeout - the number of seconds ArangoDB will hold a lock."
   [ctx]
   (let [resource (calc-transaction-base ctx)]
-    (call-arango :post resource ctx))
+    (call-arango :post resource ctx)))

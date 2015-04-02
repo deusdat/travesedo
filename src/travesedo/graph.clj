@@ -7,9 +7,30 @@
 (def- traversal-resource "/traversal")
 (def- graph-root "/gharial")
 
+(defn list-graphs
+  "Returns all of the graphs in the database provided in the context"
+  [ctx]
+  (let [resource (derive-resource ctx graph-root)]
+    (println resource)
+    (call-arango :get resource ctx)))
+
+(defn create-graph
+  "Creates a new graph as configured."
+  [ctx])
+
+(defn create-edge-collection
+  "Helper function to create an edge collection using graph language"
+  [from to relationship]
+  
+  {:collection relationship
+   :from from
+   :to to})
+
+
 (defn create-edge-path
   [{graph :graph coll :collection :as ctx}]
-  (clojure.string/join "/" [(derive-resource ctx graph-root) graph "edge" coll]))
+  (clojure.string/join "/" 
+                       [(derive-resource ctx graph-root) graph "edge" coll]))
 
 (defn traverse
   "Executes a traversal on the server. The :body value of the context should
@@ -22,7 +43,7 @@
   Here's a filter example:
   :filter \"if(vertex.name === 'Bob') { return 'exclude'} else return ''\""
   [ctx]
-  (let [resource (derive-resource traversal-resource)]
+  (let [resource (derive-resource ctx traversal-resource)]
     (call-arango :post resource ctx)))
 
 (defn create-edge
@@ -32,6 +53,16 @@
     the minimum structure of
     {:_to '_idOfDestinationVertex'
       :_from '_idOfSourceVertex'
-    } You can add as many other values to this base form as needed."
+    } You can add as many other values to this base form as needed.
+    
+    For example: 
+    {...
+     :graph \"SimpleGraph\",
+     :body {
+        {:_to '_idOfDestinationVertex'
+          :_from '_idOfSourceVertex'
+        } 
+      }
+    }"
     [ctx]
     (call-arango :post (create-edge-path ctx) ctx))

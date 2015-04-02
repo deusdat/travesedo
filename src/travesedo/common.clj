@@ -14,25 +14,26 @@
                      :content-type :json
                      :coerce :always
                      :throw-exceptions false })
+
 (def query-interested-keys  #{:wait-for-sync :exclude-system :load-count
-                                    :in-collection :create-collection :rev
-                                    :policy :keep-null :type})
-                                    
+                              :in-collection :create-collection :rev
+                              :policy :keep-null :type})
+
 (def query-key-mappings {:wait-for-sync "waitForSync",
-                                   :exclude-system "excludeSystem",
-                                   :keep-null "keepNull",
-                                   :load-count :count,
-                                   :in-collection "collection",
-                                   :create-collection "createCollection"})
-                                   
+                         :exclude-system "excludeSystem",
+                         :keep-null "keepNull",
+                         :load-count :count,
+                         :in-collection "collection",
+                         :create-collection "createCollection"})
+
 (def response-key-mappings   {:isSystem :is-system,
-										:waitForSync :wait-for-sync, 
-										:doCompact :do-compact,
-										:journalSize :journal-size,
-										:isVolatile :is-volatile,
-										:numberOfShards :number-of-shards,
-										:sharKeys :shard-keys
-										:keyOptions :key-options})
+                              :waitForSync :wait-for-sync, 
+                              :doCompact :do-compact,
+                              :journalSize :journal-size,
+                              :isVolatile :is-volatile,
+                              :numberOfShards :number-of-shards,
+                              :sharKeys :shard-keys
+                              :keyOptions :key-options})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.
@@ -83,8 +84,9 @@
       (get-conn shard)
       {:url (:url shard) :uname uname :password password})))
 
-(defn find-connection [{conn :conn conn-select :conn-select}]
+(defn find-connection 
   "Finds the {:url :uname :password} for a given context"
+  [{conn :conn conn-select :conn-select}]
   (if conn-select (conn-select conn) (conn-selector conn)) )
 
 
@@ -96,9 +98,10 @@
   (into {} (for [[k v] ctx :when (get  interested-keys k) ]
              [(get key-mapping k k) (if (string? v ) (name v) v)])))
 
-(defn- transform-response [resp]
+(defn- transform-response 
   "Processes the response from the server to make it match what the driver says
   the clients should expect"
+  [resp]
   (let [headers (get-values (:headers resp)
                             #{"X-Arango-Async-Id" "Etag"}
                             {"X-Arango-Async-Id" :job-id, "Etag" :rev})
