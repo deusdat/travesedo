@@ -180,7 +180,7 @@
   :count :true/:false,
   :batch-size number,
   :ttl (time to live for cursor in seconds),
-  :bind-vars (k-v list of parameters),
+  :bind-vars a map of k-v pairs,
   :options (k-v list of options)}
   Everything but :query is optional.
   
