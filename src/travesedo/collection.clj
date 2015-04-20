@@ -183,7 +183,7 @@
 	[ctx]
 	(call-arango :get (find-collection-resource ctx) ctx))
 
-(defn load
+(defn load-collection
   "Loads a given collection into memory. Helpful to prime the first read off a 
   collection.
   :load-count true will return the :count value in the result.
@@ -242,7 +242,7 @@
   (call-arango :put (str (find-collection-resource ctx) "/properties") 
   		(assoc ctx :wait-for-sync wait-for-sync :journal-size journal-size)))
 
-(defn rename 
+(defn rename! 
   "Renames a collection. The :payload value should be 
   {:name \"new-collection-name\"}"
   [ctx]
