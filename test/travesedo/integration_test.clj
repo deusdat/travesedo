@@ -1,5 +1,6 @@
 (ns travesedo.integration-test
   (:require [clojure.test :refer :all]
+            [travesedo.core-test :refer :all]
             [clojure.pprint :as cpp]
             [travesedo.database :as db]
             [travesedo.collection :as col]
@@ -12,24 +13,10 @@
 ;; Rand generator from
 ;; http://blog.raphinou.com/2009/03/generate-random-string-in-clojure.html
 
-(def VALID-CHARS
-  (map char (concat  (range 66 91) ; A-Z
-                    (range 97 123)))) ; a-z
 
-(defn random-char []
-  (rand-nth VALID-CHARS))
 
-(defn random-str [length]
-  (apply str (take length (repeatedly random-char))))
-
-;; Connection
-(def ctx {:conn {:type :simple, :url "http://arangodb:8529"}
-          :db  (random-str 15), :wait-for-sync :true} ;; wait to avoid write misses.
-  )
-
-(defn setup-fixure [f]
+(defn setup-coll-fixture [f]
   "Setups the database for the tests"
-  (is (= false (:error (db/create (assoc ctx :payload {:name (:db ctx)})) )))
   (col/create (assoc ctx :payload {:name "people"}))
   (doc/create (assoc ctx
                 :in-collection "people"
@@ -37,12 +24,12 @@
   (doc/create (assoc ctx
                 :in-collection "people"
                 :payload {:name "Amber Davenport" :age 31})  )
-  (try (f)
-    (finally
-      (db/drop ctx))))
+  (f))
 
 
-(use-fixtures :once setup-fixure)
+(use-fixtures :once (compose-fixtures 
+                      setup-database-fixure
+                      setup-coll-fixture))
 
 (defn no-error [resp]
   (is (false? (:error resp))))
@@ -139,7 +126,7 @@
       (is (= expected (update-in cols-no-collections-id [:names :people] dissoc :id)))))
  	
   (testing "Should load the collection with count returned"
-    (let [resp (dissoc (col/load (assoc ctx :collection "people")) :id)
+    (let [resp (dissoc (col/load-collection (assoc ctx :collection "people")) :id)
           expected {:code 200,
                     :error false,
                     :type 2,

@@ -11,12 +11,33 @@
   "Returns all of the graphs in the database provided in the context"
   [ctx]
   (let [resource (derive-resource ctx graph-root)]
-    (println resource)
     (call-arango :get resource ctx)))
 
+(defn- swap-graph-keys [map depth-keys swap-map]
+  (update-in map depth-keys 
+                 clojure.set/rename-keys 
+                 swap-map))
+
 (defn create-graph
-  "Creates a new graph as configured."
-  [ctx])
+  "Creates a new graph as configured. The context needs the structure.
+  {:db \"db-name\",
+   :payload {:name \"graph-name\",
+             :edge-definitions [ {:collection \"edge-name\",
+                                  :from [\"vert-coll1\",
+                                         \"vert-coll2]}],
+                                  :to [\"vert-coll3\",
+                                      [\"vert-coll4\"]
+                                  }],
+             :orphan-collections [\"orph-coll1\"]}}"
+  [ctx]
+  (let [resource (derive-resource ctx graph-root)
+        cleaned-outer (swap-graph-keys ctx [:payload] 
+                        {:edge-definitions :edgeDefinitions,
+                         :orphan-collections :orphanCollections})]
+    (println resource)
+    (swap-graph-keys (call-arango :post resource cleaned-outer)
+                    [:graph] {:edgeDefinitions :edge-definitions,
+                              :orphanCollections :orphan-collections })))
 
 (defn create-edge-collection
   "Helper function to create an edge collection using graph language"

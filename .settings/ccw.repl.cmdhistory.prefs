@@ -1,2 +1,0 @@
-cmdhistory=["(find-doc 'travesedo.database/drop')" "(find-doc \\"travesedo.database/drop\\")" "(clojure.repl/find-doc \\"travesedo.database/drop" "\\n  \\"Calculates a fuller resource than calc-resource-base.\\"" "(clojure.repl/find-doc \\"travesedo.database/drop\\")" "(use clojure.repl)" "(nrepl/doc)" "(\:use clojure.repl\\n      )" "(run-tests)"]
-eclipse.preferences.version=1
