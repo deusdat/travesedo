@@ -25,8 +25,7 @@
     (let [ctx (assoc ctx :payload 
                 {:name "testing-graph",
                  :edge-definitions [{:collection "owns",
-                                     :from ["v1",
-                                            "v3"],
+                                     :from ["v1"],
                                      :to ["v2"]}]})
           res (g/create-graph ctx)]
       (println res)
