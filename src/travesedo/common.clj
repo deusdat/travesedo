@@ -39,7 +39,7 @@
   "Creates the start of every resource based upon the database.
   Returns a path like: /_db/{:db}/_api"
   [{db :db}]
-  (str db-root "/" db  api-resource))
+  (str db-root "/" (name db)  api-resource))
 
 (defn derive-resource
   "Calculates a fuller resource than calc-resource-base."
