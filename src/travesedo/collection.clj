@@ -78,7 +78,7 @@
     (call-arango :post db-resource ctx)))
 
 (defn- find-collection-resource [ctx]
-  (derive-resource ctx (str collection-resource "/" (:collection ctx))))
+  (derive-resource ctx (str collection-resource "/" (name (:collection ctx)))))
 
 (defn delete-collection
   "Deletes a collection, specified by :collection within the database specified 
