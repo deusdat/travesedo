@@ -2,7 +2,7 @@
   "Allows the client to interact with the graph half of ArangoDB."
   (:refer-clojure :exclude [load])
   (:require [travesedo.common :refer :all]
-                  [clojure.string]))
+            [clojure.string]))
 
 (def- traversal-resource "/traversal")
 (def- graph-root "/gharial")

@@ -5,7 +5,8 @@
             [travesedo.database :as db]
             [travesedo.collection :as col]
             [travesedo.query :as q]
-            [travesedo.document :as doc]))
+            [travesedo.document :as doc]
+            [travesedo.index :as idx]))
 
 ;; This is really an integration test that runs heavily over the
 ;; query API, but leverages the collections/documents too.
@@ -26,10 +27,12 @@
                 :payload {:name "Amber Davenport" :age 31})  )
   (f))
 
+(def geo-col "col-geo")
+(def hash-col "col-hash")
 
-(use-fixtures :once (compose-fixtures 
-                      setup-database-fixure
-                      setup-coll-fixture))
+(use-fixtures :once (join-fixtures
+                      [setup-database-fixture
+                      setup-coll-fixture]))
 
 (defn no-error [resp]
   (is (false? (:error resp))))
@@ -144,7 +147,6 @@
                     :status 4,
                     :name "people",
                     :is-system false}]
-      (cpp/pprint resp)
       (is (= expected resp)))) 	
  	
  	(testing "Create and delete of collection"
@@ -154,8 +156,7 @@
           delete-resp (col/delete-collection (assoc ctx :collection coll))]
       (do
         (no-error create-resp)
-        (no-error delete-resp))))
-  )            
+        (no-error delete-resp)))))            
 
 (deftest query-by-example
   (testing "Tries to query for a doc based on name example."
@@ -186,3 +187,72 @@
           new-ctx (conj payload ctx)
           resp (q/return-all new-ctx)]
       (contains-n-docs resp 1))))
+
+(deftest exercise-hash-index-lifecycle
+  (try
+    (col/create (assoc ctx :payload {:name hash-col}))
+    (testing "Create an index with one attr."
+      (let [res (idx/create-hash! ctx hash-col :name)]
+        (is (= 201 (:code res)))))
+    (testing "Create an index with one attr twice."
+      (let [res (idx/create-hash! ctx hash-col :name)]
+        (is (= 200 (:code res)))))
+    (testing "Create an index with two attr."
+      (let [res (idx/create-hash! ctx hash-col [:name :city])]
+        (is (= 201 (:code res)))))
+    (testing "Create an index with two attr twice."
+      (let [res (idx/create-hash! ctx hash-col [:name :city])]
+        (is (= 200 (:code res)))))
+    (testing "Getting all the index"
+      (let [res (idx/read-all ctx hash-col)
+            idxes (:indexes res)]
+        (is (= 3 (count idxes)))
+        (is (= 200 (:code res)))
+        (is (= "hash" (:type (second idxes))))
+        (is (= "hash" (:type (nth idxes 2))))))
+    (testing "Deleting the index"
+      (is (= 200 
+             (:code (first (idx/delete-hash! ctx hash-col [:name :city])))))
+      (is (= 200 
+             (:code (first (idx/delete-hash! ctx hash-col [:name]))))))
+    (testing "Getting all the index after delete"
+      (let [res (idx/read-all ctx hash-col)
+            idxes (:indexes res)]
+        (is (= 1 (count idxes)))
+        (is (= 200 (:code res)))
+        (is (= "primary" (:type (first idxes))))))
+    (finally (col/delete-collection (assoc ctx :collection hash-col)))))
+
+(deftest exercise-geo-index-lifecycle
+  (try
+    (col/create (assoc ctx :payload {:name geo-col}))
+    (testing "Create an index with one attr."
+      (let [res (idx/create-geo! ctx geo-col :loc)]
+        (is (= 201 (:code res)))))
+    (testing "Create an index with one attr twice."
+      (let [res (idx/create-geo! ctx geo-col :loc)]
+        (is (= 200 (:code res)))))
+    (testing "Create an index with two attr."
+      (let [res (idx/create-geo! ctx geo-col [:lat :long])]
+        (is (= 201 (:code res)))))
+    (testing "Create an index with two attr twice."
+      (let [res (idx/create-geo! ctx geo-col [:lat :long])]
+        (is (= 200 (:code res)))))
+    (testing "Getting all the index"
+      (let [res (idx/read-all ctx geo-col)
+            idxes (:indexes res)]
+        (is (= 3 (count idxes)))
+        (is (= 200 (:code res)))
+        (is (= "geo1" (:type (second idxes))))
+        (is (= "geo2" (:type (nth idxes 2))))))
+    (testing "Deleting the index"
+      (is (= 200 
+             (:code (first (idx/delete! ctx geo-col 
+                             #(.startsWith (:type %) "geo")))))))
+    (testing "Getting all the index after delete"
+      (let [res (idx/read-all ctx geo-col)
+            idxes (:indexes res)]
+        (is (= 1 (count idxes)))
+        (is (= 200 (:code res)))
+        (is (= "primary" (:type (first idxes))))))
+    (finally (col/delete-collection (assoc ctx :collection geo-col)))))
