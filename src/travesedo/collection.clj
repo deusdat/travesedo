@@ -181,7 +181,7 @@
 	   :type 2}]}          
 	"
 	[ctx]
-	(call-arango :get (find-collection-resource ctx) ctx))
+	(call-arango :get (derive-resource ctx collection-resource) ctx))
 
 (defn load-collection
   "Loads a given collection into memory. Helpful to prime the first read off a 
