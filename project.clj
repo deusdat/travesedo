@@ -1,4 +1,4 @@
-(defproject deusdatsolutions/travesedo "0.1.4"
+(defproject deusdatsolutions/travesedo "0.5.0"
   :description "A clojure driver for the ArangoDB server."
 
   :url "https://github.com/deusdat/travesedo"
