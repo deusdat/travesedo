@@ -96,7 +96,7 @@ Errors like 404, or 500 are returned as maps. The driver does not throw exceptio
 The input and top level attributes of the response keys follow idomatic,
 lowercase names. For example, ArangoDB returns "isSystem" when working with 
 collection meta data as part of its root document. The driver will convert this
-to :is-system. The driver will not convert 
+to :is-system. The driver will not convert keys within a result collection. 
 
 ## License
 
