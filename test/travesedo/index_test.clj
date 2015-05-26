@@ -3,9 +3,10 @@
     [travesedo.index :refer :all]
     [clojure.test :refer :all]))
 
+
+(def col "test-col")
 (def testing-ctx {:db :testing-db,
                   :in-collection col})
-(def col "test-col")
 
 (deftest check-helpers
   (testing "Create cap-constraint with size"

@@ -34,8 +34,7 @@
                       [setup-database-fixture
                       setup-coll-fixture]))
 
-(defn no-error [resp]
-  (is (false? (:error resp))))
+
 
 (defn contains-n-docs [resp n]
   (is (= n (count (:result resp)))))

@@ -92,6 +92,38 @@
   [ctx collection-name config]
   (create! (make-cap-constraint ctx collection-name config)))
 
+(defn read-all
+  "Returns all indexs for the collection.
+   {:code 200, 
+    :error false, 
+    :identifiers {:profile/0 {:id \"profile/0\", 
+                              :type \"primary\", 
+                              :unique true, 
+                              :sparse false,
+                              :selectivityEstimate 1, 
+                              :fields [\"_key\"]}}, 
+                  :indexes [{:id \"profile/0\", 
+                             :type \"primary\", 
+                             :unique true, 
+                             :sparse false, 
+                             :selectivityEstimate 1, 
+                             :fields [\"_key\"]}]}"
+  [ctx collection-name]
+  (call-arango :get (calc-index-resource-base ctx) 
+    (assoc ctx :in-collection collection-name)))
+
+
+(defn delete!
+  "Deletes an index that matches a criteria defined by fn matches?.
+   matches? gets an index entry map, like those returned by read-all; returns
+   true on match.
+
+   Returns a seq of delete responses shaped like {:code 200}"
+  [ctx collection-name matches?]
+  (for [idx (:indexes (read-all ctx collection-name)) :when (matches? idx)]
+    (call-arango :delete (calc-index-handle-resource ctx (:id idx)) ctx)))
+
+
 (defn create-geo!
   [ctx collection-name fields]
   (create! (make-geo ctx collection-name fields)))
@@ -112,32 +144,3 @@
   [ctx collection-name attribute & minLength]
   (create! (make-fulltext ctx collection-name attribute minLength)))
 
-(defn delete!
-  "Deletes an index that matches a criteria defined by fn matches?.
-   matches? gets an index entry map, like those returned by read-all; returns
-   true on match.
-
-   Returns a seq of delete responses shaped like {:code 200}"
-  [ctx collection-name matches?]
-  (for [idx (:indexes (read-all ctx collection-name)) :when (matches? idx)]
-    (call-arango :delete (calc-index-handle-resource ctx (:id idx)) ctx)))
-
-(defn read-all
-  "Returns all indexs for the collection.
-   {:code 200, 
-    :error false, 
-    :identifiers {:profile/0 {:id \"profile/0\", 
-                              :type \"primary\", 
-                              :unique true, 
-                              :sparse false,
-                              :selectivityEstimate 1, 
-                              :fields [\"_key\"]}}, 
-                  :indexes [{:id \"profile/0\", 
-                             :type \"primary\", 
-                             :unique true, 
-                             :sparse false, 
-                             :selectivityEstimate 1, 
-                             :fields [\"_key\"]}]}"
-  [ctx collection-name]
-  (call-arango :get (calc-index-resource-base ctx) 
-    (assoc ctx :in-collection collection-name)))

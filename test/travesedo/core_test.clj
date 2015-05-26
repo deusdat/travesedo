@@ -18,6 +18,9 @@
           :db  (random-str 15), 
           :wait-for-sync true})
 
+(defn no-error [resp]
+  (is (false? (:error resp))))
+
 (defn setup-database-fixture
   "Setups the database for the tests"
   [f]
