@@ -27,9 +27,9 @@
    :payload {:name \"graph-name\",
              :edge-definitions [ {:collection \"edge-name\",
                                   :from [\"vert-coll1\",
-                                         \"vert-coll2]}],
+                                         \"vert-coll2]],
                                   :to [\"vert-coll3\",
-                                      [\"vert-coll4\"]
+                                      \"vert-coll4\"]
                                   }],
              :orphan-collections [\"orph-coll1\"]}}"
   [ctx]
