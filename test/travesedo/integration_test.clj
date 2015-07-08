@@ -16,8 +16,10 @@
 
 
 (def patrick-payload {:_key "virmundi@gmail.com",
-                               :name "JPatrick Davenport",
-                               :age 32})
+                      :name "JPatrick Davenport",
+                      :age 32})
+
+
 
 (defn setup-coll-fixture 
   "Setups the database for the tests"
@@ -177,6 +179,48 @@
         (no-error delete-resp)))))            
 
 (deftest query-by-example
+  (let [remove-by-key1 {:_key "somethings",
+                     :name "User 1"},
+          remove-by-key2 {:_key "got",
+                :name "User 2"},
+          remove-by-key3 {:_key "to",
+                :name "User 3"},
+          remove-by-key4 {:_key "give",
+                          :name "User 4"}]
+      (doc/create (assoc ctx
+                     :in-collection "people"
+                     :payload remove-by-key1))
+      (doc/create (assoc ctx
+                     :in-collection "people"
+                     :payload remove-by-key2))
+      (doc/create (assoc ctx
+                     :in-collection "people"
+                     :payload remove-by-key3))
+      (doc/create (assoc ctx
+                     :in-collection "people"
+                     :payload remove-by-key4)))
+  
+  
+  (testing
+    "Tries to pull back the documents by key"
+    (let [ks {:collection "people", 
+              :payload {:keys ["somethings" "got" "to" "give"]}}
+          new-ctx (merge ctx ks)
+          resp (q/by-keys new-ctx)
+          docs (:documents resp)]
+      (is docs)
+      (is (= 4 (count docs)))))
+  
+  (testing 
+    "Tries to delete by key"
+    (let [ks {:collection "people", 
+              :payload {:keys ["somethings" "got" "to" "give" "bob"]}}
+          new-ctx (merge ctx ks)
+          resp (q/remove-by-keys new-ctx)]
+      (no-error resp)
+      (is (= 4 (:removed resp)))
+      (is (= 1 (:ignored resp)))))
+  
   (testing
     "Tries to query for a doc based on name example."
     (let [example {:example {:name "JPatrick Davenport"} :collection "people"}
@@ -184,17 +228,7 @@
           resp (q/by-example new-ctx)
           person (first (:result resp))]
       (patrick? person)
-      (contains-n-docs resp 1)))
-  
-  (testing
-    "Tries to pull back the documents by key"
-    (let [ks {:collection "people", :payload {:keys ["virmundi@gmail.com"]}}
-          new-ctx (merge ctx ks)
-          resp (q/by-keys new-ctx)
-          docs (:documents resp)]
-      (is docs)
-      (patrick? (first docs))
-      (is (= 1 (count docs))))))
+      (contains-n-docs resp 1))))
 
 (deftest return-all-docs
   (testing

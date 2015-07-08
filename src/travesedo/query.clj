@@ -84,6 +84,30 @@
     (assoc-in ctx [:payload :collection] (:collection ctx)) 
     "/simple/lookup-by-keys"))
 
+(defn remove-by-keys
+  "Deletes from a collection of documents by a list of keys. 
+
+   You must provide a :collection key with either a string or keyword for the 
+   collection the keys go with. The :payload value is a simple map 
+   {:keys [\"_k\"]}
+
+   Example input: (def ctx {....standard config.....
+                            :collection :persons, 
+                            :payload {:keys [\"somthing1\"]} 
+
+   The output for a successful deletion has four keys.
+   :removed is the number of deleted entries.
+   :ignored is the number of keys that didn't match.
+   :error true/false if error occured.
+   :code is the http code for the operation.
+
+   Example output:
+   {:error false, :code 200, :removed 10, :ignored 3]"
+  [ctx]
+  (call-simple 
+    (assoc-in ctx [:payload :collection] (:collection ctx)) 
+    "/simple/remove-by-keys"))
+
 (defn by-example-first
   "Queries a collection by example, returning the first document that matches."
   [ctx]
