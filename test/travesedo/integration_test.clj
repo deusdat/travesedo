@@ -19,8 +19,9 @@
                                :name "JPatrick Davenport",
                                :age 32})
 
-(defn setup-coll-fixture [f]
+(defn setup-coll-fixture 
   "Setups the database for the tests"
+  [f]
   (col/create (assoc ctx :payload {:name "people"}))
   (doc/create (assoc ctx
                      :in-collection "people"
@@ -58,9 +59,9 @@
     "Against non-existant collection"
     (let [aql  "FOR p IN nonexistant-collection RETURN p"
           batched (q/aql-query (assoc ctx :payload {:query aql :batch-size 1}))]
-      (is (nil? (:has-more batched))) "There shouldn't be a data indicator."
+      (is (nil? (:has-more batched)) "There shouldn't be a data indicator.")
       (is (= 404 (:code batched)) "Server should say not found.")
-      (is (:error batched))) "Should map the error properly.")
+      (is (:error batched))))
   
   (testing
     "Query with more results."

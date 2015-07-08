@@ -233,7 +233,7 @@
   (call-arango :delete (find-vertext-path ctx) ctx))
 
 (defn modify-vertex!
-  [ctx]
+  
   "Modifies the attributes of an existing vertex to the values found in 
    :payload. If the attribute doesn't exist, it's added. Supports 
    :wait-for-sync, :if-match and :keep-null.
