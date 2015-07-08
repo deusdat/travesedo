@@ -33,7 +33,8 @@
                               :isVolatile :is-volatile,
                               :numberOfShards :number-of-shards,
                               :sharKeys :shard-keys
-                              :keyOptions :key-options})
+                              :keyOptions :key-options,
+                              :indexBuckets :index-buckets})
 
 (defn calc-api-base
   "Creates the start of every resource based upon the database.

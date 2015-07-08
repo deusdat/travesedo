@@ -60,6 +60,30 @@
   [ctx]
   (call-simple ctx "/simple/by-example"))
 
+(defn by-keys 
+  "Queries for a collection of documents by a list of keys. 
+
+   You must provide a :collection key with either a string or keyword for the 
+   collection the keys go with. The :payload value is a simple map 
+   {:keys [\"_k\"]}
+
+   Example input: (def ctx {....standard config.....
+                            :collection :persons, 
+                            :payload {:keys [\"somthing1\"]} 
+
+   The output for a successful request is a map with three keys. 
+   :documents which is a list of documents with matching keys. Missing keys
+   are ignored.
+   :error true/false if successful call,
+   :code an int of the response code.
+
+   Example output:
+   {:error false, :code 200, :documents [{:_id person/123123, ....}]"
+  [ctx]
+  (call-simple 
+    (assoc-in ctx [:payload :collection] (:collection ctx)) 
+    "/simple/lookup-by-keys"))
+
 (defn by-example-first
   "Queries a collection by example, returning the first document that matches."
   [ctx]

@@ -14,7 +14,7 @@
   (apply str (take length (repeatedly random-char))))
 
 (def ctx {:conn {:type :simple, 
-                 :url "http://arangodb:8529"},
+                 :url "http://arangodb26:8529"},
           :db  (random-str 15), 
           :wait-for-sync true})
 

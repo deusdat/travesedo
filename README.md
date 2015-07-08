@@ -1,11 +1,18 @@
 # Travesedo
 
-Travesedo is a Clojure driver for the ArangoDB data store system. It was inspired by clojure/java.jdbc wrapper library
-and its ease of configuration passing. The goal of the driver is to provide the most idiomatic Clojure driver while fully
+Travesedo is a Clojure driver for the ArangoDB data store system. It was inspired 
+by clojure/java.jdbc wrapper library and its ease of configuration passing. The 
+goal of the driver is to provide the most idiomatic Clojure driver while fully
 leveraging the power of the ArangoDB tools.
 
 I'm personally using the project. As a result, the driver has a bit of a pragmatic approach: getting features that I need out.
 As I have time, I will extend the driver (presently focused on document interaction) to the larger body of ArangoDB features.
+
+## ArangoDB Version
+Master works with 2.6. 
+To work with 2.5, see the arangodb_2.5 branch. 
+2.6 is backwards compatible for existing features. Adds the ability to batch
+look up and remove by keys.
 
 ## Usage
 
