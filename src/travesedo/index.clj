@@ -76,6 +76,12 @@
   [ctx]
   (call-arango :post (calc-index-resource-base ctx) ctx))
 
+(defn create-skiplist!
+  ([ctx collection-name fields]
+    (create-skiplist! ctx collection-name fields false false))
+  ([ctx collection-name fields unique sparse]
+    (create! (make-skiplist ctx collection-name fields unique sparse))))
+
 (defn create-hash! 
   "Creates a hash index on the set of fields for a collection. Can also be
   unique."
@@ -141,6 +147,6 @@
                                      (= (mapv name fields) (:fields %)))))
 
 (defn create-fulltext!
-  [ctx collection-name attribute & minLength]
-  (create! (make-fulltext ctx collection-name attribute minLength)))
+  [ctx collection-name attribute & min-length]
+  (create! (make-fulltext ctx collection-name attribute min-length)))
 
