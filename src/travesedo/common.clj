@@ -120,9 +120,10 @@
         headers {:headers (get-values ctx #{:if-match :if-none-match :async}
                                       {:async "x-arango-async"})}
         body {:form-params (:payload ctx)}
-        raw-response  (handler full-url  (conj client-config
-                                               body
-                                               query-params
-                                               headers
-                                               auth))]
+        raw-response  (handler full-url (merge (conj client-config
+                                                     body
+                                                     query-params
+                                                     headers
+                                                     auth) 
+                                               (:http-config ctx)))] ;; Pulls in custom config
     (transform-response raw-response)))
