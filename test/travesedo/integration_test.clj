@@ -113,7 +113,7 @@
                     :is-volatile false,
                     :name "people",
                     :is-system false,
-                    :index-buckets 1,
+                    :index-buckets 8,
                     :type 2,
                     :key-options {:type "traditional", :allowUserKeys true},
                     :status 3,
